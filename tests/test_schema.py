@@ -5,7 +5,7 @@ from datetime import timedelta, timezone
 
 from pydantic import ValidationError
 
-from schema import DialogueTurn, EpisodePart, EpisodeScript, JST, resolve_published_at
+from morning_news_podcast.schema import DialogueTurn, EpisodePart, EpisodeScript, JST, resolve_published_at
 
 
 def _make_turn(speaker: str = "ずんだもん", text: str = "テスト発話なのだ。") -> dict:

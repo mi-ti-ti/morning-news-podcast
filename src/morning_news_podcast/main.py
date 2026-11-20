@@ -7,12 +7,12 @@ from pathlib import Path
 
 from google import genai
 
-import config
-from audio_generator import build_episode_mp3
-from news_collector import collect_all_news
-from rss_builder import build_rss_feed, cleanup_old_episodes
-from schema import JST, EpisodeScript
-from script_generator import generate_part_script
+from . import config
+from .audio_generator import build_episode_mp3
+from .news_collector import collect_all_news
+from .rss_builder import build_rss_feed, cleanup_old_episodes
+from .schema import JST, EpisodeScript
+from .script_generator import generate_part_script
 
 
 def _build_description(script: EpisodeScript) -> str:

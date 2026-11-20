@@ -6,8 +6,8 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
-import config
-from schema import DialogueTurn, EpisodePart, strip_xml_control_chars
+from . import config
+from .schema import DialogueTurn, EpisodePart, strip_xml_control_chars
 
 
 class PodcastPartScript(EpisodePart):

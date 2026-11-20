@@ -30,7 +30,7 @@ runs:
     - name: Download VOICEVOX assets (ONNX Runtime, OpenJTalk dict, 0.vvm)
       if: steps.cache-voicevox.outputs.cache-hit != 'true'
       shell: bash
-      run: uv run python voicevox_setup.py
+      run: uv run python -m morning_news_podcast.voicevox_setup
 
     - name: Restore existing episodes from gh-pages
       shell: bash

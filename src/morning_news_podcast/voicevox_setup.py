@@ -8,7 +8,7 @@ import tempfile
 import urllib.request
 from pathlib import Path
 
-import config
+from . import config
 
 VOICEVOX_CORE_VERSION = "0.16.4"
 ONNXRUNTIME_VERSION = "1.17.3"

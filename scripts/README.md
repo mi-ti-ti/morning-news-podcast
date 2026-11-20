@@ -97,5 +97,5 @@
 push 前に台本 JSON のスキーマ検証のみを行う場合：
 
 ```bash
-uv run python -c "from pathlib import Path; from schema import EpisodeScript; s = EpisodeScript.model_validate_json(Path('scripts/pending/2026-11-20_extra-boj-rate.json').read_text(encoding='utf-8')); print('OK:', s.episode_id, len(s.parts), sum(len(t.text) for p in s.parts for t in p.turns))"
+uv run python -c "from pathlib import Path; from morning_news_podcast.schema import EpisodeScript; s = EpisodeScript.model_validate_json(Path('scripts/pending/2026-11-20_extra-boj-rate.json').read_text(encoding='utf-8')); print('OK:', s.episode_id, len(s.parts), sum(len(t.text) for p in s.parts for t in p.turns))"
 ```

@@ -8,8 +8,8 @@ from unittest.mock import MagicMock
 from google.genai import _transformers as genai_transformers
 from pydantic import ValidationError
 
-import config
-from script_generator import PodcastPartScript, _RawPodcastPartScript, generate_part_script
+from morning_news_podcast import config
+from morning_news_podcast.script_generator import PodcastPartScript, _RawPodcastPartScript, generate_part_script
 
 
 def _make_mock_client(payload: dict) -> MagicMock:

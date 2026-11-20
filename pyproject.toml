@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "morning-news-podcast"
 version = "0.1.0"
@@ -17,3 +21,9 @@ dependencies = [
     "voicevox-core @ https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/voicevox_core-0.16.4-cp310-abi3-macosx_10_12_x86_64.whl ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
     "voicevox-core @ https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/voicevox_core-0.16.4-cp310-abi3-win_amd64.whl ; sys_platform == 'win32' and platform_machine == 'AMD64'",
 ]
+
+[project.scripts]
+morning-news-podcast = "morning_news_podcast.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/morning_news_podcast"]

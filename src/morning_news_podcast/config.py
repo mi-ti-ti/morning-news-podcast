@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # --- パス設定 ---
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 DOCS_DIR = BASE_DIR / "docs"
 EPISODES_DIR = DOCS_DIR / "episodes"
 FEED_XML_PATH = DOCS_DIR / "feed.xml"

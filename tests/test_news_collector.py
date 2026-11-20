@@ -8,8 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-import config
-import news_collector
+from morning_news_podcast import config, news_collector
 
 
 class TestNewsCollector(unittest.TestCase):

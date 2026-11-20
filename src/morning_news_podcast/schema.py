@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, BeforeValidator, Field, field_validator, model_validator
 
-import config
+from . import config
 
 JST = timezone(timedelta(hours=9))
 

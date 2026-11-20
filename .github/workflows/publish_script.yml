@@ -48,7 +48,7 @@ jobs:
           processed_list=()
           for f in "${pending_files[@]}"; do
             echo "Processing script: $f"
-            uv run python main.py --from-script "$f"
+            uv run morning-news-podcast --from-script "$f"
             processed_list+=("$f")
           done
 

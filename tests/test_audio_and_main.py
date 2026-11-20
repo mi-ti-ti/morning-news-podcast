@@ -11,11 +11,10 @@ from unittest.mock import MagicMock, patch
 
 from pydub import AudioSegment
 
-import audio_generator
-import config
-import main as main_module
-from schema import DialogueTurn
-from script_generator import PodcastPartScript
+from morning_news_podcast import audio_generator, config
+from morning_news_podcast import main as main_module
+from morning_news_podcast.schema import DialogueTurn
+from morning_news_podcast.script_generator import PodcastPartScript
 
 
 def _silent_wav_bytes(duration_ms: int = 100) -> bytes:
