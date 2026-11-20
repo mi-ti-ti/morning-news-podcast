@@ -10,6 +10,9 @@ from voicevox_core.blocking import Onnxruntime, OpenJtalk, Synthesizer, VoiceMod
 import config
 from script_generator import DialogueTurn
 
+MAX_TURNS_PER_PART = 60
+MAX_CHARS_PER_TURN = 500
+
 
 def _init_synthesizer() -> Synthesizer:
     onnxruntime_path = config.find_onnxruntime_path()
@@ -45,8 +48,9 @@ def _synthesize_part_segment(
     combined = AudioSegment.empty()
     turn_pause = AudioSegment.silent(duration=250)  # 掛け合い間の自然な間（0.25秒）
 
-    for idx, turn in enumerate(turns, start=1):
-        text = turn.text.strip()
+    turns_to_synthesize = turns[:MAX_TURNS_PER_PART]
+    for idx, turn in enumerate(turns_to_synthesize, start=1):
+        text = turn.text.strip()[:MAX_CHARS_PER_TURN]
         if not text:
             continue
         sp_cfg = speaker_map.get(turn.speaker) or next(iter(speaker_map.values()))
@@ -63,7 +67,7 @@ def _synthesize_part_segment(
         combined += seg
 
         if idx % 10 == 0:
-            print(f"    ... {idx}/{len(turns)} ターン合成完了")
+            print(f"    ... {idx}/{len(turns_to_synthesize)} ターン合成完了")
 
     return combined
 
