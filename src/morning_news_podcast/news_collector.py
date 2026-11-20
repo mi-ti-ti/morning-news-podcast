@@ -60,7 +60,8 @@ def load_recent_episode_context(
             continue
         try:
             data = json.loads(jf.read_text(encoding="utf-8"))
-        except Exception:
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"[WARN] 過去エピソードJSONの読み込みをスキップします ({jf}): {exc}")
             continue
         if not isinstance(data, dict):
             continue

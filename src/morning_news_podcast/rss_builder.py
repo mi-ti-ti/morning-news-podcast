@@ -22,8 +22,8 @@ def _load_meta(mp3_path: Path) -> dict:
             data = json.loads(meta_path.read_text(encoding="utf-8"))
             if isinstance(data, dict):
                 return data
-        except Exception:
-            pass
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"[WARN] メタデータJSONの読み込みをスキップします ({meta_path}): {exc}")
     return {}
 
 
