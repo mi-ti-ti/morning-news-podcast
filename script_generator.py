@@ -7,37 +7,38 @@ from google.genai import types
 from pydantic import BaseModel, Field
 
 import config
+from schema import DialogueTurn, EpisodePart, strip_xml_control_chars
 
 
-class DialogueTurn(BaseModel):
-    speaker: str = Field(
-        max_length=30,
-        description="話者名。指定されたパーソナリティ名のいずれか（例: ずんだもん / 春日部つむぎ）。",
-    )
-    text: str = Field(
-        max_length=500,
-        description="VOICEVOXで読み上げるセリフ本文。英字略語はカタカナ読みにし、ト書きや記号は含めない。",
-    )
-
-
-class PodcastPartScript(BaseModel):
-    part_title: str = Field(
-        max_length=100,
-        description="このパートの短いサブタイトル",
-    )
-    summary_bullets: list[str] = Field(
-        max_length=6,
-        description="取り上げたニュースと背景解説の要約（2〜3行）",
-    )
+class PodcastPartScript(EpisodePart):
     keyword_of_the_day: str | None = Field(
         default=None,
         max_length=60,
         description="第2部で解説した『今日のビジネス用語』（例: プライシングパワー）。第1部ではnull。",
     )
-    turns: list[DialogueTurn] = Field(
+
+
+class _RawDialogueTurn(BaseModel):
+    """Gemini Structured Output 用の緩やかなターン定義（後段で正規化・フォールバックを行う）"""
+
+    speaker: str = Field(
+        max_length=30,
+        description=DialogueTurn.model_fields["speaker"].description,
+        json_schema_extra=DialogueTurn.model_fields["speaker"].json_schema_extra,
+    )
+    text: str = Field(
+        max_length=500,
+        description=DialogueTurn.model_fields["text"].description,
+    )
+
+
+class _RawPodcastPartScript(PodcastPartScript):
+    """Gemini Structured Output 用の生レスポンススキーマ（turns のみ緩やかに受け取る）"""
+
+    turns: list[_RawDialogueTurn] = Field(
         min_length=1,
         max_length=60,
-        description="2人の会話ターンリスト（合計文字数1,500〜1,800文字目安）",
+        description=EpisodePart.model_fields["turns"].description,
     )
 
 
@@ -129,13 +130,23 @@ def generate_part_script(
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
             response_mime_type="application/json",
-            response_schema=PodcastPartScript,
+            response_schema=_RawPodcastPartScript,
             temperature=0.7,
         ),
     )
-    script = PodcastPartScript.model_validate_json(response.text)
+    raw = _RawPodcastPartScript.model_validate_json(response.text)
     valid_names = set(speaker_names)
-    for turn in script.turns:
-        if turn.speaker not in valid_names:
-            turn.speaker = speaker_names[0]
-    return script
+    normalized_turns: list[DialogueTurn] = []
+    for turn in raw.turns:
+        cleaned_text = strip_xml_control_chars(turn.text).strip()
+        if not cleaned_text:
+            continue
+        speaker = turn.speaker if turn.speaker in valid_names else speaker_names[0]
+        normalized_turns.append(DialogueTurn(speaker=speaker, text=cleaned_text))
+
+    return PodcastPartScript(
+        part_title=raw.part_title,
+        summary_bullets=raw.summary_bullets,
+        turns=normalized_turns,
+        keyword_of_the_day=raw.keyword_of_the_day,
+    )

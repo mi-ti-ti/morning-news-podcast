@@ -1,0 +1,80 @@
+name: Publish Script Episode
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/pending/*.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "gh-pages-publish"
+  cancel-in-progress: false
+
+jobs:
+  synthesize-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync to latest origin/main
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Setup podcast environment and restore gh-pages
+        uses: ./.github/actions/setup-podcast-env
+
+      - name: Synthesize pending script episodes (without GEMINI_API_KEY)
+        id: process-scripts
+        run: |
+          shopt -s nullglob
+          pending_files=(scripts/pending/*.json)
+          if [ ${#pending_files[@]} -eq 0 ]; then
+            echo "No pending script files found in scripts/pending/."
+            echo "processed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          processed_list=()
+          for f in "${pending_files[@]}"; do
+            echo "Processing script: $f"
+            uv run python main.py --from-script "$f"
+            processed_list+=("$f")
+          done
+
+          printf '%s\n' "${processed_list[@]}" > /tmp/processed_scripts.txt
+          echo "processed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Publish generated files to gh-pages branch
+        if: steps.process-scripts.outputs.processed == 'true'
+        uses: ./.github/actions/publish-gh-pages
+        with:
+          commit-prefix: "chore: publish script episode(s)"
+          date-format: "%Y-%m-%d %H:%M JST"
+
+      - name: Remove processed script files from main
+        if: steps.process-scripts.outputs.processed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          mapfile -t processed_list < /tmp/processed_scripts.txt
+          if [ ${#processed_list[@]} -gt 0 ]; then
+            git rm -f --ignore-unmatch -- "${processed_list[@]}"
+          fi
+          if git diff --cached --quiet; then
+            echo "No processed script files left to remove on main."
+          else
+            git commit -m "chore: remove published pending scripts [skip ci]"
+            git push origin main
+          fi

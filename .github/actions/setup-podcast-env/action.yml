@@ -1,0 +1,50 @@
+name: Setup Podcast Environment
+description: Set up Python/uv, ffmpeg, VOICEVOX assets, and restore existing episodes from gh-pages
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up uv and Python 3.13
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: "3.13"
+        enable-cache: true
+
+    - name: Install system dependencies (ffmpeg)
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+
+    - name: Install Python dependencies
+      shell: bash
+      run: uv sync --no-dev
+
+    - name: Cache VOICEVOX assets
+      id: cache-voicevox
+      uses: actions/cache@v4
+      with:
+        path: voicevox_assets
+        key: voicevox-assets-0.16.4-ort1.17.3
+
+    - name: Download VOICEVOX assets (ONNX Runtime, OpenJTalk dict, 0.vvm)
+      if: steps.cache-voicevox.outputs.cache-hit != 'true'
+      shell: bash
+      run: uv run python voicevox_setup.py
+
+    - name: Restore existing episodes from gh-pages
+      shell: bash
+      run: |
+        git fetch --depth=1 origin +refs/heads/gh-pages:refs/remotes/origin/gh-pages || true
+        if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+          git worktree add --detach /tmp/gh-pages origin/gh-pages
+          mkdir -p docs/episodes
+          if [ -d /tmp/gh-pages/episodes ]; then
+            cp -a /tmp/gh-pages/episodes/. docs/episodes/
+          fi
+          if [ -f /tmp/gh-pages/feed.xml ]; then
+            cp -a /tmp/gh-pages/feed.xml docs/feed.xml
+          fi
+        else
+          git worktree add --detach /tmp/gh-pages
+        fi

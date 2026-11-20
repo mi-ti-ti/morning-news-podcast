@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: "gh-pages-publish"
+  cancel-in-progress: false
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -18,46 +22,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up uv and Python 3.13
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.13"
-          enable-cache: true
-
-      - name: Install system dependencies (ffmpeg)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-
-      - name: Install Python dependencies
-        run: uv sync --no-dev
-
-      - name: Cache VOICEVOX assets
-        id: cache-voicevox
-        uses: actions/cache@v4
-        with:
-          path: voicevox_assets
-          key: voicevox-assets-0.16.4-ort1.17.3
-
-      - name: Download VOICEVOX assets (ONNX Runtime, OpenJTalk dict, 0.vvm)
-        if: steps.cache-voicevox.outputs.cache-hit != 'true'
-        run: uv run python voicevox_setup.py
-
-      - name: Restore existing episodes from gh-pages
-        run: |
-          git fetch --depth=1 origin +refs/heads/gh-pages:refs/remotes/origin/gh-pages || true
-          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-            git worktree add --detach /tmp/gh-pages origin/gh-pages
-            mkdir -p docs/episodes
-            if [ -d /tmp/gh-pages/episodes ]; then
-              cp -a /tmp/gh-pages/episodes/. docs/episodes/
-            fi
-            if [ -f /tmp/gh-pages/feed.xml ]; then
-              cp -a /tmp/gh-pages/feed.xml docs/feed.xml
-            fi
-          else
-            git worktree add --detach /tmp/gh-pages
-          fi
+      - name: Setup podcast environment and restore gh-pages
+        uses: ./.github/actions/setup-podcast-env
 
       - name: Generate podcast episode and update RSS feed
         env:
@@ -67,22 +33,7 @@ jobs:
         run: uv run python main.py
 
       - name: Publish generated files to gh-pages branch
-        run: |
-          git -C /tmp/gh-pages checkout --orphan gh-pages-next
-          git -C /tmp/gh-pages rm -rf . --ignore-unmatch
-          cp -a docs/cover.png docs/index.html /tmp/gh-pages/
-          if [ -f docs/feed.xml ]; then
-            cp -a docs/feed.xml /tmp/gh-pages/
-          fi
-          mkdir -p /tmp/gh-pages/episodes
-          cp -a docs/episodes/. /tmp/gh-pages/episodes/
-          git -C /tmp/gh-pages add -A
-          if git show-ref --verify --quiet refs/remotes/origin/gh-pages && git -C /tmp/gh-pages diff --cached --quiet refs/remotes/origin/gh-pages; then
-            echo "No changes to publish to gh-pages."
-          else
-            git -C /tmp/gh-pages config user.name "github-actions[bot]"
-            git -C /tmp/gh-pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            TZ=Asia/Tokyo date_str=$(date +"%Y-%m-%d")
-            git -C /tmp/gh-pages commit -m "chore: publish daily podcast (${date_str})"
-            git -C /tmp/gh-pages push --force origin HEAD:gh-pages
-          fi
+        uses: ./.github/actions/publish-gh-pages
+        with:
+          commit-prefix: "chore: publish daily podcast"
+          date-format: "%Y-%m-%d"
