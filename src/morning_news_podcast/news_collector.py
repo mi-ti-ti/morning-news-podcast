@@ -13,8 +13,8 @@ import yaml
 from google import genai
 from google.genai import types
 
-import config
-from schema import JST, resolve_published_at
+from . import config
+from .schema import JST, resolve_published_at
 
 RSS_FETCH_TIMEOUT_SEC = 10
 RSS_MAX_BYTES = 2 * 1024 * 1024

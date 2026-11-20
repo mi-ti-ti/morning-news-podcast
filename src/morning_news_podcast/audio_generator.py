@@ -5,12 +5,10 @@ from pathlib import Path
 
 from pydub import AudioSegment
 
-import config
-from schema import DialogueTurn
-from voicevox_setup import ensure_voicevox_assets
+from . import config
+from .schema import DialogueTurn, MAX_CHARS_PER_TURN, MAX_TURNS_PER_PART
+from .voicevox_setup import ensure_voicevox_assets
 
-MAX_TURNS_PER_PART = 60
-MAX_CHARS_PER_TURN = 500
 PART_PAUSE_MS = 800
 
 

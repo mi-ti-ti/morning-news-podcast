@@ -8,26 +8,24 @@ import tempfile
 import urllib.request
 from pathlib import Path
 
-import config
+from . import config
 
-VOICEVOX_CORE_VERSION = "0.16.4"
-ONNXRUNTIME_VERSION = "1.17.3"
 OPEN_JTALK_DICT_URL = (
     "https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz"
 )
 VOICE_MODEL_URL = (
-    f"https://github.com/VOICEVOX/voicevox_vvm/releases/download/{VOICEVOX_CORE_VERSION}/0.vvm"
+    f"https://github.com/VOICEVOX/voicevox_vvm/releases/download/{config.VOICEVOX_CORE_VERSION}/0.vvm"
 )
 
 _ONNXRUNTIME_TARGETS: dict[tuple[str, str], str] = {
-    ("linux", "x86_64"): f"voicevox_onnxruntime-linux-x64-{ONNXRUNTIME_VERSION}.tgz",
-    ("linux", "amd64"): f"voicevox_onnxruntime-linux-x64-{ONNXRUNTIME_VERSION}.tgz",
-    ("linux", "aarch64"): f"voicevox_onnxruntime-linux-arm64-{ONNXRUNTIME_VERSION}.tgz",
-    ("linux", "arm64"): f"voicevox_onnxruntime-linux-arm64-{ONNXRUNTIME_VERSION}.tgz",
-    ("darwin", "arm64"): f"voicevox_onnxruntime-osx-arm64-{ONNXRUNTIME_VERSION}.tgz",
-    ("darwin", "x86_64"): f"voicevox_onnxruntime-osx-x86_64-{ONNXRUNTIME_VERSION}.tgz",
-    ("win32", "amd64"): f"voicevox_onnxruntime-win-x64-{ONNXRUNTIME_VERSION}.tgz",
-    ("win32", "x86_64"): f"voicevox_onnxruntime-win-x64-{ONNXRUNTIME_VERSION}.tgz",
+    ("linux", "x86_64"): f"voicevox_onnxruntime-linux-x64-{config.ONNXRUNTIME_VERSION}.tgz",
+    ("linux", "amd64"): f"voicevox_onnxruntime-linux-x64-{config.ONNXRUNTIME_VERSION}.tgz",
+    ("linux", "aarch64"): f"voicevox_onnxruntime-linux-arm64-{config.ONNXRUNTIME_VERSION}.tgz",
+    ("linux", "arm64"): f"voicevox_onnxruntime-linux-arm64-{config.ONNXRUNTIME_VERSION}.tgz",
+    ("darwin", "arm64"): f"voicevox_onnxruntime-osx-arm64-{config.ONNXRUNTIME_VERSION}.tgz",
+    ("darwin", "x86_64"): f"voicevox_onnxruntime-osx-x86_64-{config.ONNXRUNTIME_VERSION}.tgz",
+    ("win32", "amd64"): f"voicevox_onnxruntime-win-x64-{config.ONNXRUNTIME_VERSION}.tgz",
+    ("win32", "x86_64"): f"voicevox_onnxruntime-win-x64-{config.ONNXRUNTIME_VERSION}.tgz",
 }
 
 
@@ -43,7 +41,7 @@ def get_onnxruntime_url() -> str:
         )
     return (
         f"https://github.com/VOICEVOX/onnxruntime-builder/releases/download/"
-        f"voicevox_onnxruntime-{ONNXRUNTIME_VERSION}/{asset_name}"
+        f"voicevox_onnxruntime-{config.ONNXRUNTIME_VERSION}/{asset_name}"
     )
 
 
@@ -97,10 +95,7 @@ def _extract_targz(archive_path: Path, dest_dir: Path, strip_components: int = 0
                 member.linkname = stripped_link
             members.append(member)
 
-        if hasattr(tarfile, "data_filter"):
-            tar.extractall(path=dest_dir, members=members, filter="data")
-        else:
-            tar.extractall(path=dest_dir, members=members)
+        tar.extractall(path=dest_dir, members=members, filter="data")
 
 
 def ensure_voicevox_assets() -> None:

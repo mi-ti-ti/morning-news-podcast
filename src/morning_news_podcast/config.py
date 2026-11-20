@@ -5,13 +5,15 @@ import sys
 from pathlib import Path
 
 # --- パス設定 ---
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 DOCS_DIR = BASE_DIR / "docs"
 EPISODES_DIR = DOCS_DIR / "episodes"
 FEED_XML_PATH = DOCS_DIR / "feed.xml"
 FEEDS_CONFIG_PATH = BASE_DIR / "feeds.yaml"
 
 # --- VOICEVOX Core アセットパス ---
+VOICEVOX_CORE_VERSION = "0.16.4"
+ONNXRUNTIME_VERSION = "1.17.3"
 VOICEVOX_DIR = Path(os.getenv("VOICEVOX_DIR", BASE_DIR / "voicevox_assets"))
 VOICEVOX_DICT_DIR = VOICEVOX_DIR / "open_jtalk_dic_utf_8-1.11"
 VOICEVOX_VVM_PATH = VOICEVOX_DIR / "0.vvm"
@@ -28,7 +30,7 @@ def find_onnxruntime_path() -> Path:
         for p in candidates:
             if p.is_file() and p.suffix == ".dylib":
                 return p
-        return VOICEVOX_DIR / "lib" / "libvoicevox_onnxruntime.1.17.3.dylib"
+        return VOICEVOX_DIR / "lib" / f"libvoicevox_onnxruntime.{ONNXRUNTIME_VERSION}.dylib"
 
     if sys.platform == "win32":
         for p in candidates:
@@ -39,7 +41,7 @@ def find_onnxruntime_path() -> Path:
     for p in candidates:
         if p.is_file() and ".so" in p.suffixes:
             return p
-    return VOICEVOX_DIR / "lib" / "libvoicevox_onnxruntime.so.1.17.3"
+    return VOICEVOX_DIR / "lib" / f"libvoicevox_onnxruntime.so.{ONNXRUNTIME_VERSION}"
 
 
 # --- モデル設定 ---

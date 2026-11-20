@@ -8,8 +8,8 @@ import xml.etree.ElementTree as ET
 
 from pydub import AudioSegment
 
-import config
-from schema import JST, resolve_published_at, strip_xml_control_chars
+from . import config
+from .schema import JST, resolve_published_at, strip_xml_control_chars
 
 ITUNES_NS = "http://www.itunes.com/dtds/podcast-1.0.dtd"
 ET.register_namespace("itunes", ITUNES_NS)
