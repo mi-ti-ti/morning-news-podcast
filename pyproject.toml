@@ -25,5 +25,8 @@ dependencies = [
 [project.scripts]
 morning-news-podcast = "morning_news_podcast.main:main"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/morning_news_podcast"]
