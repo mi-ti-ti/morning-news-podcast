@@ -96,8 +96,8 @@ pip install https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/v
 
 # 2. VOICEVOX アセットの配置（voicevox_assets/ 以下に配置）
 mkdir -p voicevox_assets
-curl -sSfL https://github.com/VOICEVOX/onnxruntime-builder/releases/download/1.17.3/voicevox_onnxruntime-linux-x64-1.17.3.tgz | tar -xz -C voicevox_assets --strip-components=1
-curl -sSfL https://github.com/r9y9/open_jtalk/releases/download/1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz | tar -xz -C voicevox_assets
+curl -sSfL https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.17.3/voicevox_onnxruntime-linux-x64-1.17.3.tgz | tar -xz -C voicevox_assets --strip-components=1
+curl -sSfL https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz | tar -xz -C voicevox_assets
 curl -sSfL https://github.com/VOICEVOX/voicevox_vvm/releases/download/0.16.4/0.vvm -o voicevox_assets/0.vvm
 
 # 3. 環境変数を設定して実行

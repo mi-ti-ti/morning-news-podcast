@@ -45,11 +45,11 @@ jobs:
         if: steps.cache-voicevox.outputs.cache-hit != 'true'
         run: |
           mkdir -p voicevox_assets
-          curl -sSfL https://github.com/VOICEVOX/onnxruntime-builder/releases/download/1.17.3/voicevox_onnxruntime-linux-x64-1.17.3.tgz -o ort.tgz
+          curl -sSfL https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.17.3/voicevox_onnxruntime-linux-x64-1.17.3.tgz -o ort.tgz
           tar -xzf ort.tgz -C voicevox_assets --strip-components=1
           rm ort.tgz
 
-          curl -sSfL https://github.com/r9y9/open_jtalk/releases/download/1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz -o dict.tar.gz
+          curl -sSfL https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz -o dict.tar.gz
           tar -xzf dict.tar.gz -C voicevox_assets
           rm dict.tar.gz
 
