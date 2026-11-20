@@ -5,13 +5,15 @@ import json
 import sys
 import tempfile
 import unittest
-from datetime import datetime
+import xml.etree.ElementTree as ET
+from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pydub import AudioSegment
 
-from morning_news_podcast import audio_generator, config
+from morning_news_podcast import audio_generator, config, rss_builder
 from morning_news_podcast import main as main_module
 from morning_news_podcast.schema import DialogueTurn
 from morning_news_podcast.script_generator import PodcastPartScript
@@ -206,12 +208,237 @@ class TestMainDailyMode(unittest.TestCase):
                 meta = json.loads(meta_path.read_text(encoding="utf-8"))
                 self.assertEqual(meta["episode_type"], "daily")
                 self.assertFalse(meta["exclude_from_context"])
+                self.assertFalse(meta["keep_forever"])
+                self.assertIsNone(meta["series_id"])
+                self.assertIsNone(meta["series_title"])
+                self.assertIsNone(meta["series_episode_number"])
                 self.assertEqual(meta["keyword_of_the_day"], "プライシングパワー")
                 self.assertEqual(meta["duration_sec"], 620)
                 self.assertEqual(meta["published_at"], f"{date_str}T05:00:00+09:00")
                 self.assertIn("【第1部：経済ニュース】", meta["description"])
                 self.assertIn("【第2部：ビジネスニュース】", meta["description"])
                 self.assertIn("【今日の1ワード】プライシングパワー", meta["description"])
+                self.assertFalse(meta["description"].startswith("【シリーズ】"))
+
+    def test_daily_mode_skip_if_existing_respects_skip_feed(self):
+        now_jst = datetime.now(main_module.JST)
+        date_str = now_jst.strftime("%Y-%m-%d")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            docs_dir = root / "docs"
+            ep_dir = docs_dir / "episodes"
+            ep_dir.mkdir(parents=True)
+            feed_path = docs_dir / "feed.xml"
+            (ep_dir / f"{date_str}.mp3").write_bytes(b"EXISTING-MP3")
+
+            with (
+                patch.object(config, "DOCS_DIR", docs_dir),
+                patch.object(config, "EPISODES_DIR", ep_dir),
+                patch.object(config, "FEED_XML_PATH", feed_path),
+                patch.object(main_module, "_refresh_feed") as mock_refresh,
+                patch.object(main_module.genai, "Client", side_effect=AssertionError("Must not call genai.Client")),
+                patch.object(sys, "argv", ["main.py", "--skip-feed"]),
+            ):
+                main_module.main()
+                mock_refresh.assert_not_called()
+                self.assertFalse(feed_path.exists())
+
+
+class TestSeriesRetentionAndBatchCli(unittest.TestCase):
+    def _write_script(self, path: Path, **overrides) -> None:
+        now_jst = datetime.now(main_module.JST)
+        ep_date = now_jst.strftime("%Y-%m-%d")
+        payload = {
+            "schema_version": 1,
+            "episode_id": f"{ep_date}_extra-series-1",
+            "episode_type": "extra",
+            "title": "【シリーズ】テスト回",
+            "published_at": f"{ep_date}T20:00:00+09:00",
+            "weekly_theme": None,
+            "keyword_of_the_day": None,
+            "exclude_from_context": False,
+            "keep_forever": True,
+            "series_id": "test-series",
+            "series_title": "経済入門シリーズ",
+            "series_episode_number": 1,
+            "parts": [
+                {
+                    "part_title": "第1回の概要",
+                    "summary_bullets": ["要点A"],
+                    "turns": [{"speaker": "ずんだもん", "text": "解説なのだ。"}],
+                }
+            ],
+        }
+        payload.update(overrides)
+        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    def test_series_metadata_description_and_retention_warn_suppression(self):
+        old_date = (datetime.now(main_module.JST).date() - timedelta(days=30)).strftime("%Y-%m-%d")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            docs_dir = root / "docs"
+            ep_dir = docs_dir / "episodes"
+            ep_dir.mkdir(parents=True)
+            feed_path = docs_dir / "feed.xml"
+
+            def fake_build_mp3(parts, output_mp3_path):
+                output_mp3_path.parent.mkdir(parents=True, exist_ok=True)
+                output_mp3_path.write_bytes(b"FAKE-MP3")
+                return 120
+
+            # 1) keep_forever=True + old published_at -> no [WARN], protected from cleanup, description has series + episode number
+            protected_script = root / "protected.json"
+            self._write_script(
+                protected_script,
+                episode_id=f"{old_date}_extra-protected",
+                published_at=f"{old_date}T12:00:00+09:00",
+                keep_forever=True,
+                series_episode_number=2,
+            )
+
+            buf1 = io.StringIO()
+            with (
+                patch.object(config, "DOCS_DIR", docs_dir),
+                patch.object(config, "EPISODES_DIR", ep_dir),
+                patch.object(config, "FEED_XML_PATH", feed_path),
+                patch.object(main_module, "build_episode_mp3", side_effect=fake_build_mp3),
+                patch.object(sys, "argv", ["main.py", "--from-script", str(protected_script)]),
+                redirect_stdout(buf1),
+            ):
+                main_module.main()
+
+            self.assertNotIn("[WARN]", buf1.getvalue())
+            protected_meta_path = ep_dir / f"{old_date}_extra-protected.json"
+            self.assertTrue(protected_meta_path.exists())
+            meta = json.loads(protected_meta_path.read_text(encoding="utf-8"))
+            self.assertTrue(meta["keep_forever"])
+            self.assertEqual(meta["series_id"], "test-series")
+            self.assertEqual(meta["series_title"], "経済入門シリーズ")
+            self.assertEqual(meta["series_episode_number"], 2)
+            self.assertTrue(meta["description"].startswith("【シリーズ】経済入門シリーズ（第2回）\n\n【第1回の概要】"))
+
+            # 2) series_title without series_episode_number -> 【シリーズ】{title} without （第N回）
+            no_num_script = root / "no_num.json"
+            now_date = datetime.now(main_module.JST).strftime("%Y-%m-%d")
+            self._write_script(
+                no_num_script,
+                episode_id=f"{now_date}_extra-nonum",
+                published_at=f"{now_date}T12:00:00+09:00",
+                series_episode_number=None,
+            )
+            with (
+                patch.object(config, "DOCS_DIR", docs_dir),
+                patch.object(config, "EPISODES_DIR", ep_dir),
+                patch.object(config, "FEED_XML_PATH", feed_path),
+                patch.object(main_module, "build_episode_mp3", side_effect=fake_build_mp3),
+                patch.object(sys, "argv", ["main.py", "--from-script", str(no_num_script), "--skip-feed"]),
+            ):
+                main_module.main()
+            no_num_meta = json.loads((ep_dir / f"{now_date}_extra-nonum.json").read_text(encoding="utf-8"))
+            self.assertTrue(no_num_meta["description"].startswith("【シリーズ】経済入門シリーズ\n\n【第1回の概要】"))
+
+            # 3) keep_forever=False + old published_at -> [WARN] IS emitted
+            unprotected_script = root / "unprotected.json"
+            self._write_script(
+                unprotected_script,
+                episode_id=f"{old_date}_extra-unprotected",
+                published_at=f"{old_date}T12:00:00+09:00",
+                keep_forever=False,
+                series_id=None,
+                series_title=None,
+                series_episode_number=None,
+            )
+            buf2 = io.StringIO()
+            with (
+                patch.object(config, "DOCS_DIR", docs_dir),
+                patch.object(config, "EPISODES_DIR", ep_dir),
+                patch.object(config, "FEED_XML_PATH", feed_path),
+                patch.object(main_module, "build_episode_mp3", side_effect=fake_build_mp3),
+                patch.object(sys, "argv", ["main.py", "--from-script", str(unprotected_script)]),
+                redirect_stdout(buf2),
+            ):
+                main_module.main()
+            self.assertIn("[WARN]", buf2.getvalue())
+
+    def test_skip_feed_and_refresh_feed_only_batch_workflow(self):
+        ep_date = datetime.now(main_module.JST).strftime("%Y-%m-%d")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            docs_dir = root / "docs"
+            ep_dir = docs_dir / "episodes"
+            ep_dir.mkdir(parents=True)
+            feed_path = docs_dir / "feed.xml"
+
+            scripts = []
+            for idx in (1, 2, 3):
+                p = root / f"ep_{idx}.json"
+                self._write_script(
+                    p,
+                    episode_id=f"{ep_date}_extra-social-{idx}",
+                    title=f"第{idx}回テスト",
+                    published_at=f"{ep_date}T20:0{idx - 1}:00+09:00",
+                    series_id="social-security",
+                    series_title="社会保障シリーズ",
+                    series_episode_number=idx,
+                )
+                scripts.append(p)
+
+            def fake_build_mp3(parts, output_mp3_path):
+                output_mp3_path.parent.mkdir(parents=True, exist_ok=True)
+                output_mp3_path.write_bytes(b"FAKE-MP3")
+                return 100
+
+            with (
+                patch.object(config, "DOCS_DIR", docs_dir),
+                patch.object(config, "EPISODES_DIR", ep_dir),
+                patch.object(config, "FEED_XML_PATH", feed_path),
+                patch.object(main_module.genai, "Client", side_effect=AssertionError("Must not call genai.Client")),
+                patch.object(main_module, "build_episode_mp3", side_effect=fake_build_mp3) as mock_build,
+            ):
+                # Run 3 scripts with --skip-feed
+                for p in scripts:
+                    with patch.object(sys, "argv", ["main.py", "--from-script", str(p), "--skip-feed"]):
+                        main_module.main()
+
+                self.assertEqual(mock_build.call_count, 3)
+                self.assertFalse(feed_path.exists())
+
+                # Re-running an already-existing MP3 with --skip-feed must also skip _refresh_feed()
+                with patch.object(sys, "argv", ["main.py", "--from-script", str(scripts[0]), "--skip-feed"]):
+                    main_module.main()
+                self.assertEqual(mock_build.call_count, 3)
+                self.assertFalse(feed_path.exists())
+
+                # Now run --refresh-feed-only once -> no build_episode_mp3, feed.xml generated with 3 items
+                with patch.object(sys, "argv", ["main.py", "--refresh-feed-only"]):
+                    main_module.main()
+                self.assertEqual(mock_build.call_count, 3)
+                self.assertTrue(feed_path.exists())
+
+            root_xml = ET.fromstring(feed_path.read_text(encoding="utf-8"))
+            items = root_xml.findall("./channel/item")
+            self.assertEqual(len(items), 3)
+            itunes_ep_tag = f"{{{rss_builder.ITUNES_NS}}}episode"
+            self.assertEqual([item.findtext(itunes_ep_tag) for item in items], ["3", "2", "1"])
+
+    def test_conflicting_cli_flags_rejected(self):
+        for argv in (
+            ["main.py", "--refresh-feed-only", "--from-script", "foo.json"],
+            ["main.py", "--refresh-feed-only", "--skip-feed"],
+        ):
+            with self.subTest(argv=argv):
+                err_buf = io.StringIO()
+                with (
+                    patch.object(sys, "argv", argv),
+                    redirect_stderr(err_buf),
+                    self.assertRaises(SystemExit) as ctx,
+                ):
+                    main_module.main()
+                self.assertEqual(ctx.exception.code, 2)
+                self.assertIn("--refresh-feed-only", err_buf.getvalue())
 
 
 if __name__ == "__main__":

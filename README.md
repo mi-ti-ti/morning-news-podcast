@@ -26,7 +26,7 @@
 ├── Dockerfile                           # 環境非依存のコンテナ実行用定義
 ├── compose.yaml                         # Docker Compose 実行定義
 ├── docs/                                # 静的テンプレート＆ローカル出力先（自動配信時は gh-pages ブランチへ公開）
-│   ├── episodes/                        # 生成されたMP3・メタデータ（最新21日分を保持・main上はGit追跡外）
+│   ├── episodes/                        # 生成されたMP3・メタデータ（最新21日分を保持・keep_forever=true は保護・main上はGit追跡外）
 │   ├── cover.png                        # ポッドキャスト番組カバー画像
 │   └── index.html                       # 公開確認用ページ（クレジット表記入り）
 ├── logs/
@@ -148,14 +148,25 @@ uv run morning-news-podcast
 
 ## 追加エピソードの配信方法
 
-毎朝の自動配信（`daily`）とは別に、号外や任意の特集回（`extra`）を手動作成した台本 JSON から配信できます。
+毎朝の自動配信（`daily`）とは別に、号外や任意の特集回・基礎解説シリーズ（`extra`）を手動作成した台本 JSON から配信できます。
 
-- **GitHub Actions での自動配信**: `scripts/pending/<episode_id>.json` を配置して `main` ブランチへ push すると、`.github/workflows/publish_script.yml` が起動し、Gemini API を使わずに VOICEVOX 音声合成・RSS 更新・`gh-pages` 公開を実行します。
+- **GitHub Actions での自動配信**: `scripts/pending/<episode_id>.json` を配置して `main` ブランチへ push すると、`.github/workflows/publish_script.yml` が起動し、Gemini API を使わずに VOICEVOX 音声合成・RSS 更新・`gh-pages` 公開を実行します。複数ファイルを同時に push した場合は `--skip-feed` で全件を合成したあと、`--refresh-feed-only` で 1 回だけクリーンアップと `feed.xml` 再生成を行います。
+- **ストック型／シリーズ回の保護と RSS タグ**: 台本 JSON で `"keep_forever": true` を指定すると `RETENTION_DAYS`（21日）超過後も自動削除されません。また `series_id` / `series_title` / `series_episode_number` を指定すると概要欄へのシリーズ表記追記および RSS の `<itunes:episode>` タグ出力に対応します。
 - **履歴記録と自動クリーンアップ**: 公開完了後、`extra` エピソードの配信履歴が `logs/extra_requests.jsonl` に自動追記・コミットされ、処理済みの `scripts/pending/*.json` は `main` ブランチから削除されます。
-- **ローカルでの手動合成**: CLI オプション `--from-script` を指定すると、ローカル環境でも台本 JSON から直接音声合成と RSS 更新を実行できます。
+- **ローカルでの手動合成・CLI オプション**:
+  - `--from-script <path>`: 指定した台本 JSON から Gemini API を呼ばずに音声合成・公開を実行します。
+  - `--skip-feed`: 音声合成とメタデータ保存のみ行い、古いエピソード削除と `feed.xml` 再生成をスキップします（複数本一括処理時に有効）。
+  - `--refresh-feed-only`: 音声合成を行わず、古いエピソード削除と `feed.xml` 再生成のみ実行します（`--from-script` / `--skip-feed` との併用不可）。
+  - `--force`: 対象エピソードの MP3 が既に存在する場合でも上書き再生成します。
 
 ```bash
+# 単発実行（音声合成 + RSS更新）
 uv run morning-news-podcast --from-script scripts/pending/2026-11-20_extra-boj-rate.json
+
+# 複数ファイルを一括合成してから最後に1回だけ RSS を更新する例
+uv run morning-news-podcast --from-script scripts/pending/ep1.json --skip-feed
+uv run morning-news-podcast --from-script scripts/pending/ep2.json --skip-feed
+uv run morning-news-podcast --refresh-feed-only
 ```
 
 台本 JSON の詳細なスキーマ仕様・命名規約・テンプレート例については、[scripts/README.md](scripts/README.md) を参照してください。
@@ -167,5 +178,5 @@ uv run morning-news-podcast --from-script scripts/pending/2026-11-20_extra-boj-r
 - **曜日別テーマの編集**: `src/morning_news_podcast/config.py` の `WEEKLY_THEMES` を編集すると、曜日ごとの特集内容を自由に変更できます。
 - **ニュースソースの追加・変更**: `feeds.yaml` の `economy` / `business` リストに RSS URL を追加・編集してください。
 - **話速・声のスタイル変更**: `src/morning_news_podcast/config.py` の `SPEAKERS` にある `style_id` や `speed_scale`（初期値: `1.05`）を調整してください。
-- **保持日数の変更**: `src/morning_news_podcast/config.py` の `RETENTION_DAYS`（初期値: `21` 日分）を変更してください。
+- **保持日数の変更**: `src/morning_news_podcast/config.py` の `RETENTION_DAYS`（初期値: `21` 日分。台本側で `"keep_forever": true` を指定したエピソードは対象外）を変更してください。
 - **配信時刻の調整**: `.github/workflows/daily_podcast.yml` の `cron` を変更してください（初期値 `10 19 * * *` ＝ 毎日 04:10 JST に起動）。

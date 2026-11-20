@@ -18,6 +18,14 @@ from .script_generator import generate_part_script
 def _build_description(script: EpisodeScript) -> str:
     lines: list[str] = []
 
+    if script.series_title:
+        if script.series_episode_number is not None:
+            lines.append(
+                f"【シリーズ】{script.series_title}（第{script.series_episode_number}回）"
+            )
+        else:
+            lines.append(f"【シリーズ】{script.series_title}")
+
     if script.weekly_theme:
         lines.append(f"【本日のテーマ】{script.weekly_theme}")
 
@@ -49,26 +57,29 @@ def _refresh_feed() -> None:
     build_rss_feed()
 
 
-def _skip_if_existing(mp3_path: Path, force: bool) -> bool:
+def _skip_if_existing(mp3_path: Path, force: bool, skip_feed: bool = False) -> bool:
     if mp3_path.exists() and not force:
         print(f"[INFO] {mp3_path.name} は既に生成済みのためスキップします（--force で再生成）。")
-        _refresh_feed()
+        if not skip_feed:
+            _refresh_feed()
         return True
     return False
 
 
-def _synthesize_and_publish(script: EpisodeScript, force: bool) -> None:
+def _synthesize_and_publish(
+    script: EpisodeScript, force: bool, skip_feed: bool = False
+) -> None:
     mp3_path = config.EPISODES_DIR / f"{script.episode_id}.mp3"
     meta_path = config.EPISODES_DIR / f"{script.episode_id}.json"
 
     cutoff_date = datetime.now(JST).date() - timedelta(days=config.RETENTION_DAYS)
-    if script.published_at.date() < cutoff_date:
+    if not script.keep_forever and script.published_at.date() < cutoff_date:
         print(
             f"[WARN] published_at ({script.published_at.date()}) が保持期間（{config.RETENTION_DAYS}日）より古いため、"
             "公開処理時のクリーンアップで削除されます。"
         )
 
-    if _skip_if_existing(mp3_path, force):
+    if _skip_if_existing(mp3_path, force, skip_feed=skip_feed):
         return
 
     duration_sec = build_episode_mp3([part.turns for part in script.parts], mp3_path)
@@ -83,11 +94,16 @@ def _synthesize_and_publish(script: EpisodeScript, force: bool) -> None:
         "published_at": script.published_at.astimezone(JST).isoformat(),
         "episode_type": script.episode_type,
         "exclude_from_context": script.exclude_from_context,
+        "keep_forever": script.keep_forever,
+        "series_id": script.series_id,
+        "series_title": script.series_title,
+        "series_episode_number": script.series_episode_number,
     }
     meta_path.parent.mkdir(parents=True, exist_ok=True)
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    _refresh_feed()
+    if not skip_feed:
+        _refresh_feed()
     print("=== 処理が正常に完了しました ===")
 
 
@@ -137,6 +153,7 @@ def _generate_daily_script(now_jst: datetime) -> EpisodeScript:
         weekly_theme=weekly_theme["label"],
         keyword_of_the_day=part2.keyword_of_the_day,
         exclude_from_context=False,
+        keep_forever=False,
         parts=[part1, part2],
     )
 
@@ -154,7 +171,26 @@ def main() -> None:
         default=None,
         help="台本JSONファイルを読み込み、Gemini APIを呼ばずに音声合成・公開を行う",
     )
+    parser.add_argument(
+        "--skip-feed",
+        action="store_true",
+        help="音声合成とメタデータ保存のみ行い、古いエピソード削除とfeed.xml再生成をスキップする",
+    )
+    parser.add_argument(
+        "--refresh-feed-only",
+        action="store_true",
+        help="音声合成を行わず、古いエピソード削除とfeed.xml再生成のみ実行する",
+    )
     args = parser.parse_args()
+
+    if args.refresh_feed_only and (args.from_script is not None or args.skip_feed):
+        parser.error("--refresh-feed-only は --from-script や --skip-feed と併用できません")
+
+    if args.refresh_feed_only:
+        print("=== RSSフィード再生成のみ実行 ===")
+        _refresh_feed()
+        print("=== 処理が正常に完了しました ===")
+        return
 
     if args.from_script is not None:
         raw_json = args.from_script.read_text(encoding="utf-8")
@@ -163,16 +199,18 @@ def main() -> None:
             f"=== 台本JSONからの音声合成開始: {script.episode_id} "
             f"(type={script.episode_type}, parts={len(script.parts)}) ==="
         )
-        _synthesize_and_publish(script, force=args.force)
+        _synthesize_and_publish(script, force=args.force, skip_feed=args.skip_feed)
         return
 
     now_jst = datetime.now(JST)
     date_str = now_jst.strftime("%Y-%m-%d")
-    if _skip_if_existing(config.EPISODES_DIR / f"{date_str}.mp3", args.force):
+    if _skip_if_existing(
+        config.EPISODES_DIR / f"{date_str}.mp3", args.force, skip_feed=args.skip_feed
+    ):
         return
 
     script = _generate_daily_script(now_jst)
-    _synthesize_and_publish(script, force=args.force)
+    _synthesize_and_publish(script, force=args.force, skip_feed=args.skip_feed)
 
 
 if __name__ == "__main__":

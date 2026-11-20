@@ -25,6 +25,11 @@ dependencies = [
 [project.scripts]
 morning-news-podcast = "morning_news_podcast.main:main"
 
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
 [tool.hatch.metadata]
 allow-direct-references = true
 

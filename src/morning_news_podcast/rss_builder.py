@@ -33,6 +33,13 @@ def _resolve_episode_published_at(mp3_path: Path, meta: dict) -> datetime:
     )
 
 
+def _valid_series_episode_number(meta: dict) -> int | None:
+    ep_num = meta.get("series_episode_number")
+    if isinstance(ep_num, int) and not isinstance(ep_num, bool) and ep_num >= 1:
+        return ep_num
+    return None
+
+
 def cleanup_old_episodes(retention_days: int = config.RETENTION_DAYS) -> None:
     """保持期間（JST日付ベース）を超えた古いMP3およびメタデータJSONを削除する"""
     if not config.EPISODES_DIR.exists():
@@ -43,6 +50,11 @@ def cleanup_old_episodes(retention_days: int = config.RETENTION_DAYS) -> None:
         meta = _load_meta(mp3_path)
         pub_dt = _resolve_episode_published_at(mp3_path, meta)
         if pub_dt.date() < cutoff_date:
+            if meta.get("keep_forever") is True:
+                print(
+                    f"[INFO] 保持保護 (keep_forever=True) のため削除をスキップ: {mp3_path.name} (published_at={pub_dt.date()})"
+                )
+                continue
             print(f"[INFO] 古いエピソードを削除: {mp3_path.name} (published_at={pub_dt.date()})")
             mp3_path.unlink(missing_ok=True)
             mp3_path.with_suffix(".json").unlink(missing_ok=True)
@@ -89,7 +101,10 @@ def build_rss_feed() -> None:
         pub_dt = _resolve_episode_published_at(mp3_path, meta)
         episodes.append((pub_dt, mp3_path, meta))
 
-    episodes.sort(key=lambda item: (item[0], item[1].stem), reverse=True)
+    episodes.sort(
+        key=lambda item: (item[0], _valid_series_episode_number(item[2]) or 0, item[1].stem),
+        reverse=True,
+    )
 
     for pub_dt, mp3_path, meta in episodes:
         episode_id = mp3_path.stem  # 例: 2026-11-18 / 2026-11-20_extra-boj-rate
@@ -119,6 +134,9 @@ def build_rss_feed() -> None:
         )
         ET.SubElement(item, f"{{{ITUNES_NS}}}duration").text = _format_duration(duration_sec)
         ET.SubElement(item, f"{{{ITUNES_NS}}}explicit").text = "false"
+        ep_num = _valid_series_episode_number(meta)
+        if ep_num is not None:
+            ET.SubElement(item, f"{{{ITUNES_NS}}}episode").text = str(ep_num)
 
     tree = ET.ElementTree(rss)
     ET.indent(tree, space="  ")
