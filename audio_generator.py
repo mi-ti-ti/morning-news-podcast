@@ -105,12 +105,3 @@ def build_episode_mp3(
 
     duration_sec = int(round(len(combined) / 1000.0))
     return duration_sec
-
-
-def build_combined_mp3(
-    part1_turns: list[DialogueTurn],
-    part2_turns: list[DialogueTurn],
-    output_mp3_path: Path,
-) -> int:
-    """後方互換用の2パート合成ラッパー"""
-    return build_episode_mp3([part1_turns, part2_turns], output_mp3_path)

@@ -23,37 +23,22 @@ class _RawDialogueTurn(BaseModel):
 
     speaker: str = Field(
         max_length=30,
-        description="話者名。指定されたパーソナリティ名のいずれか（例: ずんだもん / 春日部つむぎ）。",
-        json_schema_extra={"enum": [sp["name"] for sp in config.SPEAKERS]},
+        description=DialogueTurn.model_fields["speaker"].description,
+        json_schema_extra=DialogueTurn.model_fields["speaker"].json_schema_extra,
     )
     text: str = Field(
         max_length=500,
-        description="VOICEVOXで読み上げるセリフ本文。英字略語はカタカナ読みにし、ト書きや記号は含めない。",
+        description=DialogueTurn.model_fields["text"].description,
     )
 
 
-class _RawPodcastPartScript(BaseModel):
-    """Gemini Structured Output 用の生レスポンススキーマ"""
+class _RawPodcastPartScript(PodcastPartScript):
+    """Gemini Structured Output 用の生レスポンススキーマ（turns のみ緩やかに受け取る）"""
 
-    part_title: str = Field(
-        min_length=1,
-        max_length=100,
-        description="このパートの短いサブタイトル",
-    )
-    summary_bullets: list[str] = Field(
-        default_factory=list,
-        max_length=6,
-        description="取り上げたニュースと背景解説の要約（2〜3行）",
-    )
     turns: list[_RawDialogueTurn] = Field(
         min_length=1,
         max_length=60,
-        description="2人の会話ターンリスト（合計文字数1,500〜1,800文字目安）",
-    )
-    keyword_of_the_day: str | None = Field(
-        default=None,
-        max_length=60,
-        description="第2部で解説した『今日のビジネス用語』（例: プライシングパワー）。第1部ではnull。",
+        description=EpisodePart.model_fields["turns"].description,
     )
 
 

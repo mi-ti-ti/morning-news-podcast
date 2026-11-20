@@ -1,0 +1,39 @@
+name: Publish to gh-pages
+description: Commit generated podcast files as an orphan commit and force-push to gh-pages
+
+inputs:
+  commit-prefix:
+    description: Commit message prefix (timestamp in JST is appended)
+    required: true
+  date-format:
+    description: strftime format for the JST timestamp in the commit message
+    required: false
+    default: "%Y-%m-%d"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Publish generated files to gh-pages branch
+      shell: bash
+      env:
+        COMMIT_PREFIX: ${{ inputs.commit-prefix }}
+        DATE_FORMAT: ${{ inputs.date-format }}
+      run: |
+        git -C /tmp/gh-pages checkout --orphan gh-pages-next
+        git -C /tmp/gh-pages rm -rf . --ignore-unmatch
+        cp -a docs/cover.png docs/index.html /tmp/gh-pages/
+        if [ -f docs/feed.xml ]; then
+          cp -a docs/feed.xml /tmp/gh-pages/
+        fi
+        mkdir -p /tmp/gh-pages/episodes
+        cp -a docs/episodes/. /tmp/gh-pages/episodes/
+        git -C /tmp/gh-pages add -A
+        if git show-ref --verify --quiet refs/remotes/origin/gh-pages && git -C /tmp/gh-pages diff --cached --quiet refs/remotes/origin/gh-pages; then
+          echo "No changes to publish to gh-pages."
+        else
+          git -C /tmp/gh-pages config user.name "github-actions[bot]"
+          git -C /tmp/gh-pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TZ=Asia/Tokyo date_str=$(date +"${DATE_FORMAT}")
+          git -C /tmp/gh-pages commit -m "${COMMIT_PREFIX} (${date_str})"
+          git -C /tmp/gh-pages push --force origin HEAD:gh-pages
+        fi

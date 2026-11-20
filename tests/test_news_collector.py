@@ -179,16 +179,16 @@ class TestNewsCollector(unittest.TestCase):
 
 
     def test_parse_daily_briefings_edge_cases(self):
-        # Reversed delimiters
+        # Reversed delimiters -> fallback to full response text
         reversed_text = (
             f"{news_collector.PART2_DELIMITER}\nビジネス側\n"
-            f"{news_collector.PART1_DELIMITER}\n経済側\n"
+            f"{news_collector.PART1_DELIMITER}\n経済側"
         )
         econ, biz = news_collector._parse_daily_briefings(
             reversed_text, "econ-rss", "biz-rss"
         )
-        self.assertEqual(econ, "経済側")
-        self.assertEqual(biz, "ビジネス側")
+        self.assertEqual(econ, reversed_text)
+        self.assertEqual(biz, reversed_text)
 
         # Single delimiter only -> fallback to full response text
         single_delim = f"{news_collector.PART1_DELIMITER}\n経済だけ"

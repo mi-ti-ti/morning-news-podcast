@@ -2,9 +2,9 @@
 
 import re
 from datetime import date, datetime, timedelta, timezone
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, field_validator, model_validator
 
 import config
 
@@ -13,6 +13,7 @@ JST = timezone(timedelta(hours=9))
 # XML 1.0 で禁止されている制御文字（TAB \x09, LF \x0a, CR \x0d は許可）
 XML_FORBIDDEN_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 EPISODE_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}(_[a-z0-9-]+)?$")
+_DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 
 
 def strip_xml_control_chars(text: str) -> str:
@@ -20,12 +21,43 @@ def strip_xml_control_chars(text: str) -> str:
     return XML_FORBIDDEN_CHARS_RE.sub("", text)
 
 
+def _sanitize_str(v: object) -> object:
+    return strip_xml_control_chars(v).strip() if isinstance(v, str) else v
+
+
+SanitizedStr = Annotated[str, BeforeValidator(_sanitize_str)]
+
+
+def resolve_published_at(stem: str, meta: dict) -> datetime | None:
+    """メタデータの published_at を優先し、未設定時はファイル名先頭YYYY-MM-DD→05:00 JST にフォールバックする"""
+    raw_pub = meta.get("published_at")
+    if isinstance(raw_pub, str) and raw_pub.strip():
+        try:
+            dt = datetime.fromisoformat(raw_pub.strip())
+            if dt.tzinfo is None or dt.utcoffset() is None:
+                dt = dt.replace(tzinfo=JST)
+            return dt.astimezone(JST)
+        except ValueError:
+            pass
+
+    m = _DATE_PREFIX_RE.match(stem)
+    if m:
+        try:
+            return datetime.strptime(m.group(1), "%Y-%m-%d").replace(
+                hour=5, minute=0, second=0, tzinfo=JST
+            )
+        except ValueError:
+            pass
+    return None
+
+
 class DialogueTurn(BaseModel):
     speaker: str = Field(
         max_length=30,
         description="話者名。指定されたパーソナリティ名のいずれか（例: ずんだもん / 春日部つむぎ）。",
+        json_schema_extra={"enum": [sp["name"] for sp in config.SPEAKERS]},
     )
-    text: str = Field(
+    text: SanitizedStr = Field(
         min_length=1,
         max_length=500,
         description="VOICEVOXで読み上げるセリフ本文。英字略語はカタカナ読みにし、ト書きや記号は含めない。",
@@ -41,16 +73,9 @@ class DialogueTurn(BaseModel):
             )
         return v
 
-    @field_validator("text", mode="before")
-    @classmethod
-    def sanitize_text(cls, v: object) -> object:
-        if isinstance(v, str):
-            return strip_xml_control_chars(v).strip()
-        return v
-
 
 class EpisodePart(BaseModel):
-    part_title: str = Field(
+    part_title: SanitizedStr = Field(
         min_length=1,
         max_length=100,
         description="このパートの短いサブタイトル",
@@ -66,13 +91,6 @@ class EpisodePart(BaseModel):
         description="2人の会話ターンリスト（合計文字数1,500〜1,800文字目安）",
     )
 
-    @field_validator("part_title", mode="before")
-    @classmethod
-    def sanitize_part_title(cls, v: object) -> object:
-        if isinstance(v, str):
-            return strip_xml_control_chars(v).strip()
-        return v
-
     @field_validator("summary_bullets")
     @classmethod
     def sanitize_summary_bullets(cls, v: list[str]) -> list[str]:
@@ -81,7 +99,7 @@ class EpisodePart(BaseModel):
 
 
 class EpisodeScript(BaseModel):
-    schema_version: int = Field(
+    schema_version: Literal[1] = Field(
         description="スキーマバージョン（1固定）",
     )
     episode_id: str = Field(
@@ -91,7 +109,7 @@ class EpisodeScript(BaseModel):
     episode_type: Literal["daily", "extra"] = Field(
         description="エピソード区分（daily / extra）",
     )
-    title: str = Field(
+    title: SanitizedStr = Field(
         min_length=1,
         max_length=120,
         description="エピソードタイトル",
@@ -117,13 +135,6 @@ class EpisodeScript(BaseModel):
         description="パート一覧（1〜2パート）",
     )
 
-    @field_validator("schema_version")
-    @classmethod
-    def validate_schema_version(cls, v: int) -> int:
-        if v != 1:
-            raise ValueError(f"未対応の schema_version です: {v}（1 のみ対応）")
-        return v
-
     @field_validator("episode_id")
     @classmethod
     def validate_episode_id(cls, v: str) -> str:
@@ -137,13 +148,6 @@ class EpisodeScript(BaseModel):
             raise ValueError(
                 f"episode_id の先頭日付が実在しない日付です: {v[:10]!r}"
             ) from exc
-        return v
-
-    @field_validator("title", mode="before")
-    @classmethod
-    def sanitize_title(cls, v: object) -> object:
-        if isinstance(v, str):
-            return strip_xml_control_chars(v).strip()
         return v
 
     @field_validator("published_at")

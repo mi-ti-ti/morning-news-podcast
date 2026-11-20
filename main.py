@@ -2,7 +2,7 @@
 
 import argparse
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from google import genai
@@ -11,10 +11,8 @@ import config
 from audio_generator import build_episode_mp3
 from news_collector import collect_all_news
 from rss_builder import build_rss_feed, cleanup_old_episodes
-from schema import EpisodePart, EpisodeScript, strip_xml_control_chars
+from schema import JST, EpisodeScript
 from script_generator import generate_part_script
-
-JST = timezone(timedelta(hours=9))
 
 
 def _build_description(script: EpisodeScript) -> str:
@@ -43,20 +41,12 @@ def _build_description(script: EpisodeScript) -> str:
             lines.append("")
         lines.append(f"【今日の1ワード】{script.keyword_of_the_day}")
 
-    return strip_xml_control_chars("\n".join(lines)) if lines else strip_xml_control_chars(script.title)
-
-
-def _resolve_output_paths(episode_id: str) -> tuple[Path, Path]:
-    episodes_root = config.EPISODES_DIR.resolve()
-    mp3_path = (config.EPISODES_DIR / f"{episode_id}.mp3").resolve()
-    meta_path = (config.EPISODES_DIR / f"{episode_id}.json").resolve()
-    if not mp3_path.is_relative_to(episodes_root) or not meta_path.is_relative_to(episodes_root):
-        raise ValueError(f"不正な出力パスが検出されました: episode_id={episode_id!r}")
-    return mp3_path, meta_path
+    return "\n".join(lines) if lines else script.title
 
 
 def _synthesize_and_publish(script: EpisodeScript, force: bool) -> None:
-    mp3_path, meta_path = _resolve_output_paths(script.episode_id)
+    mp3_path = config.EPISODES_DIR / f"{script.episode_id}.mp3"
+    meta_path = config.EPISODES_DIR / f"{script.episode_id}.json"
 
     cutoff_date = datetime.now(JST).date() - timedelta(days=config.RETENTION_DAYS)
     if script.published_at.date() < cutoff_date:
@@ -75,7 +65,7 @@ def _synthesize_and_publish(script: EpisodeScript, force: bool) -> None:
     print(f"[INFO] MP3結合・保存完了: {mp3_path} ({duration_sec}秒)")
 
     meta = {
-        "title": strip_xml_control_chars(script.title),
+        "title": script.title,
         "description": _build_description(script),
         "duration_sec": duration_sec,
         "weekly_theme": script.weekly_theme,
@@ -138,18 +128,7 @@ def _generate_daily_script(now_jst: datetime) -> EpisodeScript:
         weekly_theme=weekly_theme["label"],
         keyword_of_the_day=part2.keyword_of_the_day,
         exclude_from_context=False,
-        parts=[
-            EpisodePart(
-                part_title=part1.part_title,
-                summary_bullets=part1.summary_bullets,
-                turns=part1.turns,
-            ),
-            EpisodePart(
-                part_title=part2.part_title,
-                summary_bullets=part2.summary_bullets,
-                turns=part2.turns,
-            ),
-        ],
+        parts=[part1, part2],
     )
 
 
@@ -180,7 +159,7 @@ def main() -> None:
 
     now_jst = datetime.now(JST)
     date_str = now_jst.strftime("%Y-%m-%d")
-    mp3_path, _ = _resolve_output_paths(date_str)
+    mp3_path = config.EPISODES_DIR / f"{date_str}.mp3"
     if mp3_path.exists() and not args.force:
         print(f"[INFO] {mp3_path.name} は既に生成済みのためスキップします（--force で再生成）。")
         cleanup_old_episodes()

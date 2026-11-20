@@ -5,7 +5,7 @@ from datetime import timedelta, timezone
 
 from pydantic import ValidationError
 
-from schema import DialogueTurn, EpisodePart, EpisodeScript, JST
+from schema import DialogueTurn, EpisodePart, EpisodeScript, JST, resolve_published_at
 
 
 def _make_turn(speaker: str = "ずんだもん", text: str = "テスト発話なのだ。") -> dict:
@@ -145,6 +145,27 @@ class TestSchemaValidation(unittest.TestCase):
             }
         )
         self.assertEqual(part.summary_bullets, ["有効な要約"])
+
+    def test_resolve_published_at_priority_and_fallbacks(self):
+        # tz-aware UTC -> JST
+        dt = resolve_published_at("2026-11-20", {"published_at": "2026-11-19T20:00:00Z"})
+        self.assertIsNotNone(dt)
+        self.assertEqual((dt.year, dt.month, dt.day, dt.hour), (2026, 11, 20, 5))
+        self.assertEqual(dt.utcoffset(), timedelta(hours=9))
+
+        # naive ISO8601 -> treated as JST
+        dt_naive = resolve_published_at("2026-11-20", {"published_at": "2026-11-20T12:30:00"})
+        self.assertIsNotNone(dt_naive)
+        self.assertEqual((dt_naive.hour, dt_naive.minute), (12, 30))
+        self.assertEqual(dt_naive.utcoffset(), timedelta(hours=9))
+
+        # missing/invalid published_at -> stem YYYY-MM-DD at 05:00 JST
+        dt_stem = resolve_published_at("2026-11-19_extra-foo", {"published_at": "not-a-date"})
+        self.assertIsNotNone(dt_stem)
+        self.assertEqual((dt_stem.year, dt_stem.month, dt_stem.day, dt_stem.hour), (2026, 11, 19, 5))
+
+        # both invalid -> None
+        self.assertIsNone(resolve_published_at("no-date-here", {}))
 
 
 if __name__ == "__main__":

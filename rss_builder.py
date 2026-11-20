@@ -1,8 +1,7 @@
 """古いエピソードの削除とPodcast用RSS（feed.xml）生成"""
 
 import json
-import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from email.utils import format_datetime
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -10,12 +9,10 @@ import xml.etree.ElementTree as ET
 from pydub import AudioSegment
 
 import config
-from schema import strip_xml_control_chars
+from schema import JST, resolve_published_at, strip_xml_control_chars
 
-JST = timezone(timedelta(hours=9))
 ITUNES_NS = "http://www.itunes.com/dtds/podcast-1.0.dtd"
 ET.register_namespace("itunes", ITUNES_NS)
-_DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 
 
 def _load_meta(mp3_path: Path) -> dict:
@@ -30,28 +27,10 @@ def _load_meta(mp3_path: Path) -> dict:
     return {}
 
 
-def _resolve_published_at(mp3_path: Path, meta: dict) -> datetime:
-    """メタデータの published_at を優先し、未設定時はファイル名先頭YYYY-MM-DD→05:00 JST にフォールバックする"""
-    raw_pub = meta.get("published_at")
-    if isinstance(raw_pub, str) and raw_pub.strip():
-        try:
-            dt = datetime.fromisoformat(raw_pub.strip())
-            if dt.tzinfo is None or dt.utcoffset() is None:
-                dt = dt.replace(tzinfo=JST)
-            return dt.astimezone(JST)
-        except ValueError:
-            pass
-
-    m = _DATE_PREFIX_RE.match(mp3_path.stem)
-    if m:
-        try:
-            return datetime.strptime(m.group(1), "%Y-%m-%d").replace(
-                hour=5, minute=0, second=0, tzinfo=JST
-            )
-        except ValueError:
-            pass
-
-    return datetime.fromtimestamp(mp3_path.stat().st_mtime, tz=JST)
+def _resolve_episode_published_at(mp3_path: Path, meta: dict) -> datetime:
+    return resolve_published_at(mp3_path.stem, meta) or datetime.fromtimestamp(
+        mp3_path.stat().st_mtime, tz=JST
+    )
 
 
 def cleanup_old_episodes(retention_days: int = config.RETENTION_DAYS) -> None:
@@ -62,7 +41,7 @@ def cleanup_old_episodes(retention_days: int = config.RETENTION_DAYS) -> None:
     cutoff_date = datetime.now(JST).date() - timedelta(days=retention_days)
     for mp3_path in sorted(config.EPISODES_DIR.glob("*.mp3")):
         meta = _load_meta(mp3_path)
-        pub_dt = _resolve_published_at(mp3_path, meta)
+        pub_dt = _resolve_episode_published_at(mp3_path, meta)
         if pub_dt.date() < cutoff_date:
             print(f"[INFO] 古いエピソードを削除: {mp3_path.name} (published_at={pub_dt.date()})")
             mp3_path.unlink(missing_ok=True)
@@ -107,7 +86,7 @@ def build_rss_feed() -> None:
     episodes: list[tuple[datetime, Path, dict]] = []
     for mp3_path in config.EPISODES_DIR.glob("*.mp3"):
         meta = _load_meta(mp3_path)
-        pub_dt = _resolve_published_at(mp3_path, meta)
+        pub_dt = _resolve_episode_published_at(mp3_path, meta)
         episodes.append((pub_dt, mp3_path, meta))
 
     episodes.sort(key=lambda item: (item[0], item[1].stem), reverse=True)

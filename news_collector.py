@@ -14,8 +14,8 @@ from google import genai
 from google.genai import types
 
 import config
+from schema import JST, resolve_published_at
 
-JST = timezone(timedelta(hours=9))
 RSS_FETCH_TIMEOUT_SEC = 10
 RSS_MAX_BYTES = 2 * 1024 * 1024
 
@@ -40,30 +40,6 @@ def load_feeds_config() -> dict[str, list[dict]]:
 MAX_CONTEXT_EPISODES = 12
 PART1_DELIMITER = "===PART1_ECONOMY==="
 PART2_DELIMITER = "===PART2_BUSINESS==="
-_DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
-
-
-def _resolve_context_published_at(stem: str, data: dict) -> datetime | None:
-    """エピソードJSONの published_at またはファイル名先頭YYYY-MM-DDから配信日時(JST)を解決する"""
-    raw_pub = data.get("published_at")
-    if isinstance(raw_pub, str) and raw_pub.strip():
-        try:
-            dt = datetime.fromisoformat(raw_pub.strip())
-            if dt.tzinfo is None or dt.utcoffset() is None:
-                dt = dt.replace(tzinfo=JST)
-            return dt.astimezone(JST)
-        except ValueError:
-            pass
-
-    m = _DATE_PREFIX_RE.match(stem)
-    if m:
-        try:
-            return datetime.strptime(m.group(1), "%Y-%m-%d").replace(
-                hour=5, minute=0, second=0, tzinfo=JST
-            )
-        except ValueError:
-            pass
-    return None
 
 
 def load_recent_episode_context(
@@ -91,7 +67,7 @@ def load_recent_episode_context(
         if data.get("exclude_from_context") is True:
             continue
 
-        pub_dt = _resolve_context_published_at(jf.stem, data)
+        pub_dt = resolve_published_at(jf.stem, data)
         if pub_dt is None:
             continue
         if pub_dt.date() < cutoff_date:
@@ -199,14 +175,9 @@ def _parse_daily_briefings(
     p1_idx = raw_text.find(PART1_DELIMITER)
     p2_idx = raw_text.find(PART2_DELIMITER)
 
-    if p1_idx != -1 and p2_idx != -1:
-        if p1_idx < p2_idx:
-            part1 = raw_text[p1_idx + len(PART1_DELIMITER) : p2_idx].strip()
-            part2 = raw_text[p2_idx + len(PART2_DELIMITER) :].strip()
-        else:
-            part2 = raw_text[p2_idx + len(PART2_DELIMITER) : p1_idx].strip()
-            part1 = raw_text[p1_idx + len(PART1_DELIMITER) :].strip()
-
+    if p1_idx != -1 and p2_idx != -1 and p1_idx < p2_idx:
+        part1 = raw_text[p1_idx + len(PART1_DELIMITER) : p2_idx].strip()
+        part2 = raw_text[p2_idx + len(PART2_DELIMITER) :].strip()
         if part1 and part2:
             return part1, part2
 
