@@ -1,7 +1,6 @@
 """Gemini 3.8 Flashによる2人掛け合い台本生成（深掘り3ステップ＋今日の1ワード＋VOICEVOX最適化）"""
 
 import re
-from typing import List, Optional
 
 from google import genai
 from google.genai import types
@@ -26,16 +25,16 @@ class PodcastPartScript(BaseModel):
         max_length=100,
         description="このパートの短いサブタイトル",
     )
-    summary_bullets: List[str] = Field(
+    summary_bullets: list[str] = Field(
         max_length=6,
         description="取り上げたニュースと背景解説の要約（2〜3行）",
     )
-    keyword_of_the_day: Optional[str] = Field(
+    keyword_of_the_day: str | None = Field(
         default=None,
         max_length=60,
         description="第2部で解説した『今日のビジネス用語』（例: プライシングパワー）。第1部ではnull。",
     )
-    turns: List[DialogueTurn] = Field(
+    turns: list[DialogueTurn] = Field(
         min_length=1,
         max_length=60,
         description="2人の会話ターンリスト（合計文字数1,500〜1,800文字目安）",
@@ -60,7 +59,7 @@ def generate_part_script(
     date_label: str,
     weekly_theme: dict,
     past_context: str,
-    used_keywords: List[str],
+    used_keywords: list[str],
 ) -> PodcastPartScript:
     speaker_names = [sp["name"] for sp in config.SPEAKERS]
     used_kw_str = "、".join(used_keywords) if used_keywords else "なし"

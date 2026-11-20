@@ -1,6 +1,7 @@
 """番組設定・モデル設定・キャラクター設定（VOICEVOX Core 版）"""
 
 import os
+import sys
 from pathlib import Path
 
 # --- パス設定 ---
@@ -17,15 +18,28 @@ VOICEVOX_VVM_PATH = VOICEVOX_DIR / "0.vvm"
 
 
 def find_onnxruntime_path() -> Path:
-    """voicevox_assets 内の ONNX Runtime 共有ライブラリを自動探索する"""
+    """実行OSに応じた ONNX Runtime 共有ライブラリを voicevox_assets 内から探索する"""
     env_path = os.getenv("VOICEVOX_ONNXRUNTIME_PATH", "").strip()
     if env_path:
         return Path(env_path)
+
     candidates = sorted(VOICEVOX_DIR.rglob("*voicevox_onnxruntime*"))
+    if sys.platform == "darwin":
+        for p in candidates:
+            if p.is_file() and p.suffix == ".dylib":
+                return p
+        return VOICEVOX_DIR / "lib" / "libvoicevox_onnxruntime.1.17.3.dylib"
+
+    if sys.platform == "win32":
+        for p in candidates:
+            if p.is_file() and p.suffix.lower() == ".dll":
+                return p
+        return VOICEVOX_DIR / "lib" / "voicevox_onnxruntime.dll"
+
     for p in candidates:
-        if p.is_file() and (".so" in p.name or p.suffix in {".dll", ".dylib"}):
+        if p.is_file() and ".so" in p.suffixes:
             return p
-    return VOICEVOX_DIR / "libvoicevox_onnxruntime.so.1.17.3"
+    return VOICEVOX_DIR / "lib" / "libvoicevox_onnxruntime.so.1.17.3"
 
 
 # --- モデル設定 ---

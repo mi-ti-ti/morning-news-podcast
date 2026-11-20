@@ -2,19 +2,20 @@
 
 import io
 from pathlib import Path
-from typing import List
 
 from pydub import AudioSegment
 from voicevox_core.blocking import Onnxruntime, OpenJtalk, Synthesizer, VoiceModelFile
 
 import config
 from script_generator import DialogueTurn
+from voicevox_setup import ensure_voicevox_assets
 
 MAX_TURNS_PER_PART = 60
 MAX_CHARS_PER_TURN = 500
 
 
 def _init_synthesizer() -> Synthesizer:
+    ensure_voicevox_assets()
     onnxruntime_path = config.find_onnxruntime_path()
     if not onnxruntime_path.exists():
         raise FileNotFoundError(
@@ -41,7 +42,7 @@ def _init_synthesizer() -> Synthesizer:
 
 def _synthesize_part_segment(
     synthesizer: Synthesizer,
-    turns: List[DialogueTurn],
+    turns: list[DialogueTurn],
     speaker_map: dict,
 ) -> AudioSegment:
     """1パート分のDialogueTurnリストをVOICEVOX Coreで合成し、結合したAudioSegmentを返す"""
@@ -73,8 +74,8 @@ def _synthesize_part_segment(
 
 
 def build_combined_mp3(
-    part1_turns: List[DialogueTurn],
-    part2_turns: List[DialogueTurn],
+    part1_turns: list[DialogueTurn],
+    part2_turns: list[DialogueTurn],
     output_mp3_path: Path,
 ) -> int:
     """第1部・第2部をそれぞれVOICEVOX Coreで合成し、pydubで結合してMP3保存する。再生秒数を返す。"""

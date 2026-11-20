@@ -7,7 +7,6 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
-from typing import Dict, List, Tuple
 
 import feedparser
 import yaml
@@ -33,14 +32,14 @@ def _sanitize_untrusted_text(text: str, max_len: int = 200) -> str:
     return cleaned[:max_len]
 
 
-def load_feeds_config() -> Dict[str, List[dict]]:
+def load_feeds_config() -> dict[str, list[dict]]:
     with open(config.FEEDS_CONFIG_PATH, "r", encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
 
 def load_recent_episode_context(
     days: int = config.CONTEXT_HISTORY_DAYS,
-) -> Tuple[str, List[str]]:
+) -> tuple[str, list[str]]:
     """直近の過去エピソードJSONから要約と既出キーワードを読み込む"""
     if not config.EPISODES_DIR.exists():
         return "（過去の配信履歴なし）", []
@@ -48,8 +47,8 @@ def load_recent_episode_context(
     today_stem = datetime.now(JST).strftime("%Y-%m-%d")
     json_files = sorted(config.EPISODES_DIR.glob("*.json"), reverse=True)
 
-    history_lines: List[str] = []
-    used_keywords: List[str] = []
+    history_lines: list[str] = []
+    used_keywords: list[str] = []
 
     for jf in json_files:
         if jf.stem == today_stem:
@@ -92,9 +91,9 @@ def _parse_published(entry: dict) -> datetime | None:
     return None
 
 
-def fetch_rss_articles(feeds: List[dict], hours_back: int = 48, max_per_feed: int = 8) -> str:
+def fetch_rss_articles(feeds: list[dict], hours_back: int = 48, max_per_feed: int = 8) -> str:
     cutoff = datetime.now(JST) - timedelta(hours=hours_back)
-    lines: List[str] = []
+    lines: list[str] = []
 
     for feed_info in feeds:
         name = _sanitize_untrusted_text(str(feed_info.get("name", "Unknown")), max_len=60) or "Unknown"
@@ -200,7 +199,7 @@ def gather_news_briefing(
 def collect_all_news(
     client: genai.Client,
     weekly_theme: dict,
-) -> Dict[str, object]:
+) -> dict[str, object]:
     feeds_cfg = load_feeds_config()
     econ_rss = fetch_rss_articles(feeds_cfg.get("economy", []))
     biz_rss = fetch_rss_articles(feeds_cfg.get("business", []))
