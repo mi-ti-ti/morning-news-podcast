@@ -1,0 +1,11 @@
+services:
+  podcast:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - PODCAST_BASE_URL=${PODCAST_BASE_URL:-}
+    volumes:
+      - ./docs:/app/docs
