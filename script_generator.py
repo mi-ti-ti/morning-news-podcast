@@ -4,40 +4,17 @@ import re
 
 from google import genai
 from google.genai import types
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 import config
+from schema import EpisodePart
 
 
-class DialogueTurn(BaseModel):
-    speaker: str = Field(
-        max_length=30,
-        description="話者名。指定されたパーソナリティ名のいずれか（例: ずんだもん / 春日部つむぎ）。",
-    )
-    text: str = Field(
-        max_length=500,
-        description="VOICEVOXで読み上げるセリフ本文。英字略語はカタカナ読みにし、ト書きや記号は含めない。",
-    )
-
-
-class PodcastPartScript(BaseModel):
-    part_title: str = Field(
-        max_length=100,
-        description="このパートの短いサブタイトル",
-    )
-    summary_bullets: list[str] = Field(
-        max_length=6,
-        description="取り上げたニュースと背景解説の要約（2〜3行）",
-    )
+class PodcastPartScript(EpisodePart):
     keyword_of_the_day: str | None = Field(
         default=None,
         max_length=60,
         description="第2部で解説した『今日のビジネス用語』（例: プライシングパワー）。第1部ではnull。",
-    )
-    turns: list[DialogueTurn] = Field(
-        min_length=1,
-        max_length=60,
-        description="2人の会話ターンリスト（合計文字数1,500〜1,800文字目安）",
     )
 
 
@@ -133,9 +110,4 @@ def generate_part_script(
             temperature=0.7,
         ),
     )
-    script = PodcastPartScript.model_validate_json(response.text)
-    valid_names = set(speaker_names)
-    for turn in script.turns:
-        if turn.speaker not in valid_names:
-            turn.speaker = speaker_names[0]
-    return script
+    return PodcastPartScript.model_validate_json(response.text)

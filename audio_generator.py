@@ -4,17 +4,19 @@ import io
 from pathlib import Path
 
 from pydub import AudioSegment
-from voicevox_core.blocking import Onnxruntime, OpenJtalk, Synthesizer, VoiceModelFile
 
 import config
-from script_generator import DialogueTurn
+from schema import DialogueTurn
 from voicevox_setup import ensure_voicevox_assets
 
 MAX_TURNS_PER_PART = 60
 MAX_CHARS_PER_TURN = 500
+PART_PAUSE_MS = 800
 
 
-def _init_synthesizer() -> Synthesizer:
+def _init_synthesizer():
+    from voicevox_core.blocking import Onnxruntime, OpenJtalk, Synthesizer, VoiceModelFile
+
     ensure_voicevox_assets()
     onnxruntime_path = config.find_onnxruntime_path()
     if not onnxruntime_path.exists():
@@ -41,7 +43,7 @@ def _init_synthesizer() -> Synthesizer:
 
 
 def _synthesize_part_segment(
-    synthesizer: Synthesizer,
+    synthesizer,
     turns: list[DialogueTurn],
     speaker_map: dict,
 ) -> AudioSegment:
@@ -54,7 +56,9 @@ def _synthesize_part_segment(
         text = turn.text.strip()[:MAX_CHARS_PER_TURN]
         if not text:
             continue
-        sp_cfg = speaker_map.get(turn.speaker) or next(iter(speaker_map.values()))
+        if turn.speaker not in speaker_map:
+            raise ValueError(f"未定義の話者名です: {turn.speaker!r}")
+        sp_cfg = speaker_map[turn.speaker]
         style_id = sp_cfg["style_id"]
         speed_scale = sp_cfg.get("speed_scale", 1.0)
 
@@ -73,27 +77,40 @@ def _synthesize_part_segment(
     return combined
 
 
-def build_combined_mp3(
-    part1_turns: list[DialogueTurn],
-    part2_turns: list[DialogueTurn],
+def build_episode_mp3(
+    parts: list[list[DialogueTurn]],
     output_mp3_path: Path,
 ) -> int:
-    """第1部・第2部をそれぞれVOICEVOX Coreで合成し、pydubで結合してMP3保存する。再生秒数を返す。"""
+    """1つ以上のパートをVOICEVOX Coreで合成し、パート間に無音を挟んでMP3保存する。再生秒数を返す。"""
+    if not parts:
+        raise ValueError("音声合成対象のパートが1つも指定されていません")
+
     print("[INFO] VOICEVOX Core を初期化中...")
     synthesizer = _init_synthesizer()
     speaker_map = {sp["name"]: sp for sp in config.SPEAKERS}
 
-    print("[INFO] 第1部（経済）の音声を合成中...")
-    seg1 = _synthesize_part_segment(synthesizer, part1_turns, speaker_map)
+    part_pause = AudioSegment.silent(duration=PART_PAUSE_MS)
+    combined = AudioSegment.empty()
 
-    print("[INFO] 第2部（ビジネス）の音声を合成中...")
-    seg2 = _synthesize_part_segment(synthesizer, part2_turns, speaker_map)
-
-    part_pause = AudioSegment.silent(duration=800)  # パート間の間（0.8秒）
-    combined = seg1 + part_pause + seg2
+    total_parts = len(parts)
+    for idx, turns in enumerate(parts, start=1):
+        print(f"[INFO] パート {idx}/{total_parts} の音声を合成中...")
+        seg = _synthesize_part_segment(synthesizer, turns, speaker_map)
+        if len(combined) > 0 and len(seg) > 0:
+            combined += part_pause
+        combined += seg
 
     output_mp3_path.parent.mkdir(parents=True, exist_ok=True)
     combined.export(output_mp3_path, format="mp3", bitrate="128k")
 
     duration_sec = int(round(len(combined) / 1000.0))
     return duration_sec
+
+
+def build_combined_mp3(
+    part1_turns: list[DialogueTurn],
+    part2_turns: list[DialogueTurn],
+    output_mp3_path: Path,
+) -> int:
+    """後方互換用の2パート合成ラッパー"""
+    return build_episode_mp3([part1_turns, part2_turns], output_mp3_path)

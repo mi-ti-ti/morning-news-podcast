@@ -1,0 +1,133 @@
+name: Publish Script Episode
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/pending/*.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "gh-pages-publish"
+  cancel-in-progress: false
+
+jobs:
+  synthesize-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync to latest origin/main
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Set up uv and Python 3.13
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install system dependencies (ffmpeg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: uv sync --no-dev
+
+      - name: Cache VOICEVOX assets
+        id: cache-voicevox
+        uses: actions/cache@v4
+        with:
+          path: voicevox_assets
+          key: voicevox-assets-0.16.4-ort1.17.3
+
+      - name: Download VOICEVOX assets (ONNX Runtime, OpenJTalk dict, 0.vvm)
+        if: steps.cache-voicevox.outputs.cache-hit != 'true'
+        run: uv run python voicevox_setup.py
+
+      - name: Restore existing episodes from gh-pages
+        run: |
+          git fetch --depth=1 origin +refs/heads/gh-pages:refs/remotes/origin/gh-pages || true
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git worktree add --detach /tmp/gh-pages origin/gh-pages
+            mkdir -p docs/episodes
+            if [ -d /tmp/gh-pages/episodes ]; then
+              cp -a /tmp/gh-pages/episodes/. docs/episodes/
+            fi
+            if [ -f /tmp/gh-pages/feed.xml ]; then
+              cp -a /tmp/gh-pages/feed.xml docs/feed.xml
+            fi
+          else
+            git worktree add --detach /tmp/gh-pages
+          fi
+
+      - name: Synthesize pending script episodes (without GEMINI_API_KEY)
+        id: process-scripts
+        run: |
+          shopt -s nullglob
+          pending_files=(scripts/pending/*.json)
+          if [ ${#pending_files[@]} -eq 0 ]; then
+            echo "No pending script files found in scripts/pending/."
+            echo "processed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          processed_list=()
+          for f in "${pending_files[@]}"; do
+            echo "Processing script: $f"
+            uv run python main.py --from-script "$f"
+            processed_list+=("$f")
+          done
+
+          printf '%s\n' "${processed_list[@]}" > /tmp/processed_scripts.txt
+          echo "processed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Publish generated files to gh-pages branch
+        if: steps.process-scripts.outputs.processed == 'true'
+        run: |
+          git -C /tmp/gh-pages checkout --orphan gh-pages-next
+          git -C /tmp/gh-pages rm -rf . --ignore-unmatch
+          cp -a docs/cover.png docs/index.html /tmp/gh-pages/
+          if [ -f docs/feed.xml ]; then
+            cp -a docs/feed.xml /tmp/gh-pages/
+          fi
+          mkdir -p /tmp/gh-pages/episodes
+          cp -a docs/episodes/. /tmp/gh-pages/episodes/
+          git -C /tmp/gh-pages add -A
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages && git -C /tmp/gh-pages diff --cached --quiet refs/remotes/origin/gh-pages; then
+            echo "No changes to publish to gh-pages."
+          else
+            git -C /tmp/gh-pages config user.name "github-actions[bot]"
+            git -C /tmp/gh-pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            TZ=Asia/Tokyo date_str=$(date +"%Y-%m-%d %H:%M")
+            git -C /tmp/gh-pages commit -m "chore: publish script episode(s) (${date_str} JST)"
+            git -C /tmp/gh-pages push --force origin HEAD:gh-pages
+          fi
+
+      - name: Remove processed script files from main
+        if: steps.process-scripts.outputs.processed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          mapfile -t processed_list < /tmp/processed_scripts.txt
+          if [ ${#processed_list[@]} -gt 0 ]; then
+            git rm -f --ignore-unmatch -- "${processed_list[@]}"
+          fi
+          if git diff --cached --quiet; then
+            echo "No processed script files left to remove on main."
+          else
+            git commit -m "chore: remove published pending scripts [skip ci]"
+            git push origin main
+          fi
