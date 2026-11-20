@@ -14,7 +14,9 @@
 
 ```text
 .
-├── .github/workflows/daily_podcast.yml  # 毎日自動実行＆GitHub Pages更新ワークフロー
+├── .github/workflows/
+│   ├── daily_podcast.yml                # 毎日自動実行＆GitHub Pages更新ワークフロー
+│   └── publish_script.yml               # 追加エピソード公開ワークフロー
 ├── .python-version                      # 使用Pythonバージョン固定（3.13）
 ├── Dockerfile                           # 環境非依存のコンテナ実行用定義
 ├── compose.yaml                         # Docker Compose 実行定義
@@ -22,14 +24,21 @@
 │   ├── episodes/                        # 生成されたMP3・メタデータ（最新21日分を保持・main上はGit追跡外）
 │   ├── cover.png                        # ポッドキャスト番組カバー画像
 │   └── index.html                       # 公開確認用ページ（クレジット表記入り）
-├── config.py                            # モデル・番組設定・曜日別テーマ・VOICEVOX話者設定
+├── scripts/                             # 追加エピソード台本配置用
+├── src/
+│   └── morning_news_podcast/            # コアモジュール
+│       ├── __init__.py                  # パッケージ初期化
+│       ├── __main__.py                  # モジュール実行エントリーポイント（python -m）
+│       ├── audio_generator.py           # VOICEVOX Core音声合成 + pydub MP3結合
+│       ├── config.py                    # モデル・番組設定・曜日別テーマ・VOICEVOX話者設定
+│       ├── main.py                      # メインエントリーポイント
+│       ├── news_collector.py            # RSS取得 + 過去回参照 + Gemini検索グラウンディング
+│       ├── rss_builder.py               # 古いMP3削除 + feed.xml再生成
+│       ├── schema.py                    # 台本・エピソードデータのスキーマ定義
+│       ├── script_generator.py          # 深掘り掛け合い台本生成（今日の1ワード含む）
+│       └── voicevox_setup.py            # OS・CPU自動判別によるVOICEVOXアセット自動取得
+├── tests/                               # 単体テスト
 ├── feeds.yaml                           # 購読する経済・ビジネスニュースRSS一覧
-├── voicevox_setup.py                    # OS・CPU自動判別によるVOICEVOXアセット自動取得
-├── news_collector.py                    # RSS取得 + 過去回参照 + Gemini検索グラウンディング
-├── script_generator.py                  # 深掘り掛け合い台本生成（今日の1ワード含む）
-├── audio_generator.py                   # VOICEVOX Core音声合成 + pydub MP3結合
-├── rss_builder.py                       # 古いMP3削除 + feed.xml再生成
-├── main.py                              # メインエントリーポイント
 └── pyproject.toml                       # uv / Python 3.13 依存パッケージ管理（OS別Wheel対応）
 ```
 
@@ -103,7 +112,7 @@ Docker（または Colima + Docker）が利用できる環境であれば、ロ�
 export GEMINI_API_KEY="your-api-key-here"
 export PODCAST_BASE_URL="https://<あなたのユーザー名>.github.io/<リポジトリ名>"
 
-# 2. ビルド＆実行（再生成したい場合は末尾に uv run python main.py --force を指定）
+# 2. ビルド＆実行（再生成したい場合は docker compose run --rm podcast uv run morning-news-podcast --force を実行）
 docker compose run --rm podcast
 ```
 
@@ -124,13 +133,13 @@ uv sync
 # 3. 環境変数を設定して実行（VOICEVOX アセット未配置時は自動でダウンロードされます）
 export GEMINI_API_KEY="your-api-key-here"
 export PODCAST_BASE_URL="https://<あなたのユーザー名>.github.io/<リポジトリ名>"
-uv run python main.py
+uv run morning-news-podcast
 ```
 
 ## カスタマイズ方法
 
-- **曜日別テーマの編集**: `config.py` の `WEEKLY_THEMES` を編集すると、曜日ごとの特集内容を自由に変更できます。
+- **曜日別テーマの編集**: `src/morning_news_podcast/config.py` の `WEEKLY_THEMES` を編集すると、曜日ごとの特集内容を自由に変更できます。
 - **ニュースソースの追加・変更**: `feeds.yaml` の `economy` / `business` リストに RSS URL を追加・編集してください。
-- **話速・声のスタイル変更**: `config.py` の `SPEAKERS` にある `style_id` や `speed_scale`（初期値: `1.05`）を調整してください。
-- **保持日数の変更**: `config.py` の `RETENTION_DAYS`（初期値: `21` 日分）を変更してください。
+- **話速・声のスタイル変更**: `src/morning_news_podcast/config.py` の `SPEAKERS` にある `style_id` や `speed_scale`（初期値: `1.05`）を調整してください。
+- **保持日数の変更**: `src/morning_news_podcast/config.py` の `RETENTION_DAYS`（初期値: `21` 日分）を変更してください。
 - **配信時刻の調整**: `.github/workflows/daily_podcast.yml` の `cron` を変更してください（初期値 `10 19 * * *` ＝ 毎日 04:10 JST に起動）。
