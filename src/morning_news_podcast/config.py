@@ -73,7 +73,7 @@ def get_base_url() -> str:
 
 
 # --- 保持期間・過去回連携・尺設定 ---
-RETENTION_DAYS = 21  # 最新21日分のMP3を保持し、古いファイルを自動削除
+RETENTION_DAYS = 21  # 最新21日分のMP3を保持し、古いファイルを自動削除（keep_forever=True の回は除外）
 CONTEXT_HISTORY_DAYS = 7  # 過去回連携（「点と線」）のために参照する直近日数
 TARGET_CHARS_PER_PART = "1,500〜1,800文字"  # 各部約5分目安
 
