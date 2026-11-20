@@ -1,0 +1,14 @@
+# 購読するRSSフィード一覧
+# 経済（第1部）・ビジネス（第2部）ごとにURLを追加・変更できます。
+
+economy:
+  - name: "NHKニュース 経済"
+    url: "https://www.nhk.or.jp/rss/news/cat5.xml"
+  - name: "東洋経済オンライン"
+    url: "https://toyokeizai.net/list/feed/rss"
+
+business:
+  - name: "ITmedia ビジネスオンライン"
+    url: "https://rss.itmedia.co.jp/rss/2.0/business.xml"
+  - name: "CNET Japan"
+    url: "https://feeds.japan.cnet.com/rss/cnet/all.rdf"
