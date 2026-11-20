@@ -5,28 +5,20 @@ from __future__ import annotations
 import argparse
 import json
 from collections.abc import Iterable
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-JST = timezone(timedelta(hours=9))
-DEFAULT_LOG_PATH = Path("logs/extra_requests.jsonl")
+from . import config
+from .schema import JST, resolve_published_at
+
+DEFAULT_LOG_PATH = config.EXTRA_REQUESTS_LOG_PATH
 
 
 def _resolve_jst_date(data: dict) -> str:
-    raw_pub = data.get("published_at")
-    if isinstance(raw_pub, str) and raw_pub.strip():
-        try:
-            dt = datetime.fromisoformat(raw_pub.strip())
-            if dt.tzinfo is None or dt.utcoffset() is None:
-                dt = dt.replace(tzinfo=JST)
-            return dt.astimezone(JST).strftime("%Y-%m-%d")
-        except ValueError:
-            pass
-
     episode_id = str(data.get("episode_id", "")).strip()
-    if len(episode_id) >= 10:
-        return episode_id[:10]
-    raise ValueError(f"日付を特定できません: episode_id={episode_id!r}")
+    dt = resolve_published_at(episode_id, data)
+    if dt is None:
+        raise ValueError(f"日付を特定できません: episode_id={episode_id!r}")
+    return dt.astimezone(JST).strftime("%Y-%m-%d")
 
 
 def load_logged_ids(log_path: Path) -> set[str]:
@@ -34,11 +26,22 @@ def load_logged_ids(log_path: Path) -> set[str]:
         return set()
 
     logged_ids: set[str] = set()
-    for line in log_path.read_text(encoding="utf-8").splitlines():
+    for line_no, line in enumerate(
+        log_path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
         stripped = line.strip()
         if not stripped:
             continue
-        record = json.loads(stripped)
+        try:
+            record = json.loads(stripped)
+        except json.JSONDecodeError as exc:
+            print(f"[WARN] 不正なJSONL行をスキップします ({log_path}:{line_no}): {exc}")
+            continue
+        if not isinstance(record, dict):
+            print(
+                f"[WARN] JSONオブジェクトではないJSONL行をスキップします ({log_path}:{line_no})"
+            )
+            continue
         episode_id = record.get("episode_id")
         if isinstance(episode_id, str) and episode_id:
             logged_ids.add(episode_id)

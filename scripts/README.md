@@ -1,6 +1,6 @@
 # 追加エピソード台本（`scripts/pending/`）作成ガイド
 
-`scripts/pending/<episode_id>.json` を作成して `main` ブランチへ push すると、GitHub Actions（`.github/workflows/publish_script.yml`）が自動で VOICEVOX 音声合成・RSS 更新・`gh-pages` 公開を行い、公開完了後に処理済み JSON を `main` から自動削除します（Gemini API は一切使用しません）。
+`scripts/pending/<episode_id>.json` を作成して `main` ブランチへ push すると、GitHub Actions（`.github/workflows/publish_script.yml`）が自動で VOICEVOX 音声合成・RSS 更新・`gh-pages` 公開を行い、公開完了後に `logs/extra_requests.jsonl` への履歴追記・コミットおよび処理済み JSON の `main` からの自動削除を行います（Gemini API は一切使用しません）。
 
 ---
 
@@ -21,7 +21,7 @@
 | フィールド | 型 | 必須 | 説明・制約 |
 |---|---|---|---|
 | `schema_version` | `int` | 必須 | `1` 固定 |
-| `episode_id` | `str` | 必須 | `YYYY-MM-DD_extra-<slug>`（追加回）または `YYYY-MM-DD`（通常回） |
+| `episode_id` | `str` | 必須 | `YYYY-MM-DD_<slug>`（例：`YYYY-MM-DD_extra-...`）（追加回）または `YYYY-MM-DD`（通常回） |
 | `episode_type` | `"extra" \| "daily"` | 必須 | 追加回は `"extra"` |
 | `title` | `str` | 必須 | 最大 120 文字（空白のみ不可、XML 1.0 禁止制御文字は除去） |
 | `published_at` | `string` (ISO8601) | 必須 | **タイムゾーン必須**（例：`"2026-11-20T12:30:00+09:00"`）。naive 日時は拒否されます。内部で JST に正規化され、RSS の `pubDate`・並び順・保持判定に使用されます |

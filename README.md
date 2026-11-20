@@ -14,9 +14,14 @@
 
 ```text
 .
-├── .github/workflows/
-│   ├── daily_podcast.yml                # 毎日自動実行＆GitHub Pages更新ワークフロー
-│   └── publish_script.yml               # 追加エピソード公開ワークフロー
+├── .github/
+│   ├── actions/
+│   │   ├── publish-gh-pages/            # 生成物（MP3・feed.xml）の gh-pages 公開用 Composite Action
+│   │   └── setup-podcast-env/           # Python/uv・ffmpeg・VOICEVOXアセット・既存配信データ復元 Action
+│   └── workflows/
+│       ├── daily_podcast.yml            # 毎日自動実行＆GitHub Pages更新ワークフロー
+│       ├── publish_script.yml           # 追加エピソード公開ワークフロー
+│       └── test.yml                     # 単体テストCIワークフロー
 ├── .python-version                      # 使用Pythonバージョン固定（3.13）
 ├── Dockerfile                           # 環境非依存のコンテナ実行用定義
 ├── compose.yaml                         # Docker Compose 実行定義
@@ -24,13 +29,18 @@
 │   ├── episodes/                        # 生成されたMP3・メタデータ（最新21日分を保持・main上はGit追跡外）
 │   ├── cover.png                        # ポッドキャスト番組カバー画像
 │   └── index.html                       # 公開確認用ページ（クレジット表記入り）
+├── logs/
+│   └── extra_requests.jsonl             # 追加エピソード配信履歴ログ（JSONL）
 ├── scripts/                             # 追加エピソード台本配置用
+│   ├── pending/                         # 配信待ち台本JSON配置ディレクトリ（公開後に自動削除）
+│   └── README.md                        # 追加エピソード台本の作成ガイド・JSONスキーマ仕様
 ├── src/
 │   └── morning_news_podcast/            # コアモジュール
 │       ├── __init__.py                  # パッケージ初期化
 │       ├── __main__.py                  # モジュール実行エントリーポイント（python -m）
 │       ├── audio_generator.py           # VOICEVOX Core音声合成 + pydub MP3結合
 │       ├── config.py                    # モデル・番組設定・曜日別テーマ・VOICEVOX話者設定
+│       ├── extra_log.py                 # 追加エピソード依頼履歴のJSONL追記ユーティリティ
 │       ├── main.py                      # メインエントリーポイント
 │       ├── news_collector.py            # RSS取得 + 過去回参照 + Gemini検索グラウンディング
 │       ├── rss_builder.py               # 古いMP3削除 + feed.xml再生成
@@ -135,6 +145,22 @@ export GEMINI_API_KEY="your-api-key-here"
 export PODCAST_BASE_URL="https://<あなたのユーザー名>.github.io/<リポジトリ名>"
 uv run morning-news-podcast
 ```
+
+## 追加エピソードの配信方法
+
+毎朝の自動配信（`daily`）とは別に、号外や任意の特集回（`extra`）を手動作成した台本 JSON から配信できます。
+
+- **GitHub Actions での自動配信**: `scripts/pending/<episode_id>.json` を配置して `main` ブランチへ push すると、`.github/workflows/publish_script.yml` が起動し、Gemini API を使わずに VOICEVOX 音声合成・RSS 更新・`gh-pages` 公開を実行します。
+- **履歴記録と自動クリーンアップ**: 公開完了後、`extra` エピソードの配信履歴が `logs/extra_requests.jsonl` に自動追記・コミットされ、処理済みの `scripts/pending/*.json` は `main` ブランチから削除されます。
+- **ローカルでの手動合成**: CLI オプション `--from-script` を指定すると、ローカル環境でも台本 JSON から直接音声合成と RSS 更新を実行できます。
+
+```bash
+uv run morning-news-podcast --from-script scripts/pending/2026-11-20_extra-boj-rate.json
+```
+
+台本 JSON の詳細なスキーマ仕様・命名規約・テンプレート例については、[scripts/README.md](scripts/README.md) を参照してください。
+
+---
 
 ## カスタマイズ方法
 

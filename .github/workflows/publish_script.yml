@@ -36,6 +36,9 @@ jobs:
 
       - name: Synthesize pending script episodes (without GEMINI_API_KEY)
         id: process-scripts
+        # カスタムドメインを使う場合は Repository Variables 等で PODCAST_BASE_URL を指定可能
+        # env:
+        #   PODCAST_BASE_URL: ${{ vars.PODCAST_BASE_URL }}
         run: |
           shopt -s nullglob
           pending_files=(scripts/pending/*.json)
@@ -70,7 +73,7 @@ jobs:
           git pull --rebase origin main
           mapfile -t processed_list < /tmp/processed_scripts.txt
           if [ ${#processed_list[@]} -gt 0 ]; then
-            uv run python extra_log.py "${processed_list[@]}"
+            uv run python -m morning_news_podcast.extra_log "${processed_list[@]}"
             if [ -f logs/extra_requests.jsonl ]; then
               git add logs/extra_requests.jsonl
             fi

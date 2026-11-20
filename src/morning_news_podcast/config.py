@@ -10,6 +10,7 @@ DOCS_DIR = BASE_DIR / "docs"
 EPISODES_DIR = DOCS_DIR / "episodes"
 FEED_XML_PATH = DOCS_DIR / "feed.xml"
 FEEDS_CONFIG_PATH = BASE_DIR / "feeds.yaml"
+EXTRA_REQUESTS_LOG_PATH = BASE_DIR / "logs" / "extra_requests.jsonl"
 
 # --- VOICEVOX Core アセットパス ---
 VOICEVOX_CORE_VERSION = "0.16.4"
