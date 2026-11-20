@@ -4,3 +4,6 @@ __pycache__/
 .env
 voicevox_assets/
 *.wav
+docs/feed.xml
+docs/episodes/*.mp3
+docs/episodes/*.json

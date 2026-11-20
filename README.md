@@ -18,10 +18,9 @@
 ├── .python-version                      # 使用Pythonバージョン固定（3.13）
 ├── Dockerfile                           # 環境非依存のコンテナ実行用定義
 ├── compose.yaml                         # Docker Compose 実行定義
-├── docs/                                # GitHub Pages 公開ディレクトリ
-│   ├── episodes/                        # 生成されたMP3・メタデータ（最新21日分を保持）
+├── docs/                                # 静的テンプレート＆ローカル出力先（自動配信時は gh-pages ブランチへ公開）
+│   ├── episodes/                        # 生成されたMP3・メタデータ（最新21日分を保持・main上はGit追跡外）
 │   ├── cover.png                        # ポッドキャスト番組カバー画像
-│   ├── feed.xml                         # Podcastアプリ購読用RSS（初回実行時に自動生成）
 │   └── index.html                       # 公開確認用ページ（クレジット表記入り）
 ├── config.py                            # モデル・番組設定・曜日別テーマ・VOICEVOX話者設定
 ├── feeds.yaml                           # 購読する経済・ビジネスニュースRSS一覧
@@ -73,13 +72,13 @@ git push -u origin main
 
 1. リポジトリの **Settings** > **Pages** を開きます。
 2. **Build and deployment** の Source で **Deploy from a branch** を選択します。
-3. Branch に **main**、フォルダに **/docs** を選択して **Save** をクリックします。
+3. Branch に **gh-pages**、フォルダに **/ (root)** を選択して **Save** をクリックします（※ 初回実行前に `gh-pages` ブランチが無い場合は、手順 5 を先に実行したあと設定してください）。
 
 ### 5. 手動テスト実行（初回エピソード＆`feed.xml` 生成）
 
 1. リポジトリの **Actions** タブを開き、左側の **Daily Morning News Podcast** を選択します。
 2. **Run workflow** ボタンをクリックして手動実行します（VOICEVOX の CPU 合成を含め 5〜10 分程度で完了します）。
-3. 完了後、`docs/episodes/YYYY-MM-DD.mp3` と `docs/feed.xml` が自動コミットされていることを確認します。
+3. 完了後、`gh-pages` ブランチに `episodes/YYYY-MM-DD.mp3` と `feed.xml` が自動コミットされていることを確認します（`main` ブランチにはコードのみが残り、自動コミットで競合しない構成です）。
 4. ブラウザで `https://<あなたのユーザー名>.github.io/<リポジトリ名>/feed.xml` にアクセスし、XML が表示されれば配信準備完了です。
 
 ### 6. スマホの Podcast アプリで購読する

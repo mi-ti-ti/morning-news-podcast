@@ -9,7 +9,7 @@ RUN apt-get update \
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
 
-COPY pyproject.toml .python-version ./
+COPY pyproject.toml uv.lock .python-version ./
 RUN uv sync --no-dev --no-install-project
 
 COPY config.py voicevox_setup.py ./
