@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+  <channel>
+    <title>毎朝5時の経済・ビジネスニュース</title>
+    <link>https://mi-ti-ti.github.io/morning-news-podcast</link>
+    <description>毎朝5:00（JST）に最新の経済・ビジネスニュースを収集し、背景や仕組みまで深掘りしてずんだもんと春日部つむぎの掛け合いで明るくお届けする自動生成ポッドキャストです。
+音声：VOICEVOX:ずんだもん、VOICEVOX:春日部つむぎ</description>
+    <language>ja</language>
+    <lastBuildDate>Fri, 20 Nov 2026 12:41:53 +0900</lastBuildDate>
+    <itunes:author>Personal AI Podcast</itunes:author>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:owner>
+      <itunes:name>Personal AI Podcast</itunes:name>
+    </itunes:owner>
+    <itunes:image href="https://mi-ti-ti.github.io/morning-news-podcast/cover.png" />
+    <itunes:category text="Business">
+      <itunes:category text="Business News" />
+    </itunes:category>
+    <item>
+      <title>2026年11月20日 | 今週の総括：AI過熱感の修正と粘着する物価から見る今後のリスク管理 ほか</title>
+      <description>【本日のテーマ】金曜・今週の総括＆振り返り
+
+【第1部：経済ニュース】
+・日経平均株価が一時2,800円超の大幅急落、米ハイテク株主導で過剰なAI投資への費用対効果がシビアに問われる局面に突入。
+・10月のコアCPIは前年比2.2%上昇となり、原材料高から人件費を反映したサービス価格の上昇へとインフレの質が変化。
+・家計では物価高と将来の金利上昇への備えが求められ、ビジネス現場ではAI導入などの投資対効果を実証する力が一段と重要に。
+
+【第2部：ビジネスニュース】
+・日立製作所が約3万5000人規模の「日立デジタル」を新設し、現場のインフラを自律制御するフィジカルAIの覇権を狙う。
+・英アームが省電力技術を武器にAIデータセンター市場で急伸し、消費電力の壁に直面するエヌビディア一強の打破に挑む。
+・今週のビジネスは、画面の中の会話型AIから、現場の産業インフラや省エネ半導体といった物理世界への本格移行が鮮明になった。
+
+【今日の1ワード】フィジカルAI</description>
+      <pubDate>Fri, 20 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20.mp3" length="9458732" type="audio/mpeg" />
+      <itunes:duration>09:51</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+  </channel>
+</rss>
