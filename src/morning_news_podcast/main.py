@@ -44,6 +44,19 @@ def _build_description(script: EpisodeScript) -> str:
     return "\n".join(lines) if lines else script.title
 
 
+def _refresh_feed() -> None:
+    cleanup_old_episodes()
+    build_rss_feed()
+
+
+def _skip_if_existing(mp3_path: Path, force: bool) -> bool:
+    if mp3_path.exists() and not force:
+        print(f"[INFO] {mp3_path.name} は既に生成済みのためスキップします（--force で再生成）。")
+        _refresh_feed()
+        return True
+    return False
+
+
 def _synthesize_and_publish(script: EpisodeScript, force: bool) -> None:
     mp3_path = config.EPISODES_DIR / f"{script.episode_id}.mp3"
     meta_path = config.EPISODES_DIR / f"{script.episode_id}.json"
@@ -55,10 +68,7 @@ def _synthesize_and_publish(script: EpisodeScript, force: bool) -> None:
             "公開処理時のクリーンアップで削除されます。"
         )
 
-    if mp3_path.exists() and not force:
-        print(f"[INFO] {mp3_path.name} は既に生成済みのためスキップします（--force で再生成）。")
-        cleanup_old_episodes()
-        build_rss_feed()
+    if _skip_if_existing(mp3_path, force):
         return
 
     duration_sec = build_episode_mp3([part.turns for part in script.parts], mp3_path)
@@ -77,8 +87,7 @@ def _synthesize_and_publish(script: EpisodeScript, force: bool) -> None:
     meta_path.parent.mkdir(parents=True, exist_ok=True)
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    cleanup_old_episodes()
-    build_rss_feed()
+    _refresh_feed()
     print("=== 処理が正常に完了しました ===")
 
 
@@ -159,11 +168,7 @@ def main() -> None:
 
     now_jst = datetime.now(JST)
     date_str = now_jst.strftime("%Y-%m-%d")
-    mp3_path = config.EPISODES_DIR / f"{date_str}.mp3"
-    if mp3_path.exists() and not args.force:
-        print(f"[INFO] {mp3_path.name} は既に生成済みのためスキップします（--force で再生成）。")
-        cleanup_old_episodes()
-        build_rss_feed()
+    if _skip_if_existing(config.EPISODES_DIR / f"{date_str}.mp3", args.force):
         return
 
     script = _generate_daily_script(now_jst)

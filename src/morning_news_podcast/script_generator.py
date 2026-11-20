@@ -7,7 +7,13 @@ from google.genai import types
 from pydantic import BaseModel, Field
 
 from . import config
-from .schema import DialogueTurn, EpisodePart, strip_xml_control_chars
+from .schema import (
+    DialogueTurn,
+    EpisodePart,
+    MAX_CHARS_PER_TURN,
+    MAX_TURNS_PER_PART,
+    strip_xml_control_chars,
+)
 
 
 class PodcastPartScript(EpisodePart):
@@ -27,7 +33,7 @@ class _RawDialogueTurn(BaseModel):
         json_schema_extra=DialogueTurn.model_fields["speaker"].json_schema_extra,
     )
     text: str = Field(
-        max_length=500,
+        max_length=MAX_CHARS_PER_TURN,
         description=DialogueTurn.model_fields["text"].description,
     )
 
@@ -37,7 +43,7 @@ class _RawPodcastPartScript(PodcastPartScript):
 
     turns: list[_RawDialogueTurn] = Field(
         min_length=1,
-        max_length=60,
+        max_length=MAX_TURNS_PER_PART,
         description=EpisodePart.model_fields["turns"].description,
     )
 
@@ -98,8 +104,6 @@ def generate_part_script(
             "最後は「今日も一日がんばるのだ！いってらっしゃい！」のような朝のエンディングで締めくくってください。"
         )
 
-    safe_past_context = _escape_boundary_tags(past_context)
-    safe_used_kw_str = _escape_boundary_tags(used_kw_str)
     safe_news_briefing = _escape_boundary_tags(news_briefing)
 
     prompt = f"""【本日の曜日テーマ】
@@ -110,12 +114,12 @@ def generate_part_script(
 
 【過去の配信履歴（関連話題の連携用）】
 <untrusted_past_context>
-{safe_past_context}
+{past_context}
 </untrusted_past_context>
 
 【直近の既出用語（回避対象）】
 <untrusted_used_keywords>
-{safe_used_kw_str}
+{used_kw_str}
 </untrusted_used_keywords>
 
 【ニュース深掘り資料】

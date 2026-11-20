@@ -9,6 +9,8 @@ from pydantic import BaseModel, BeforeValidator, Field, field_validator, model_v
 from . import config
 
 JST = timezone(timedelta(hours=9))
+MAX_TURNS_PER_PART = 60
+MAX_CHARS_PER_TURN = 500
 
 # XML 1.0 で禁止されている制御文字（TAB \x09, LF \x0a, CR \x0d は許可）
 XML_FORBIDDEN_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -59,7 +61,7 @@ class DialogueTurn(BaseModel):
     )
     text: SanitizedStr = Field(
         min_length=1,
-        max_length=500,
+        max_length=MAX_CHARS_PER_TURN,
         description="VOICEVOXで読み上げるセリフ本文。英字略語はカタカナ読みにし、ト書きや記号は含めない。",
     )
 
@@ -87,7 +89,7 @@ class EpisodePart(BaseModel):
     )
     turns: list[DialogueTurn] = Field(
         min_length=1,
-        max_length=60,
+        max_length=MAX_TURNS_PER_PART,
         description="2人の会話ターンリスト（合計文字数1,500〜1,800文字目安）",
     )
 
