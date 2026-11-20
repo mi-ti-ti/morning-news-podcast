@@ -1,5 +1,6 @@
 """Unit tests for schema.py"""
 
+import json
 import unittest
 from datetime import timedelta, timezone
 
@@ -166,6 +167,115 @@ class TestSchemaValidation(unittest.TestCase):
 
         # both invalid -> None
         self.assertIsNone(resolve_published_at("no-date-here", {}))
+
+    def test_keep_forever_and_series_defaults_backward_compatible(self):
+        legacy_extra = EpisodeScript.model_validate(_make_script())
+        self.assertFalse(legacy_extra.keep_forever)
+        self.assertIsNone(legacy_extra.series_id)
+        self.assertIsNone(legacy_extra.series_title)
+        self.assertIsNone(legacy_extra.series_episode_number)
+
+        daily = EpisodeScript.model_validate(
+            _make_script(
+                episode_id="2026-11-20",
+                episode_type="daily",
+                title="2026年11月20日 | 経済ニュース ほか",
+                weekly_theme="金曜・今週の総括＆振り返り",
+            )
+        )
+        self.assertFalse(daily.keep_forever)
+        self.assertIsNone(daily.series_id)
+        self.assertIsNone(daily.series_title)
+        self.assertIsNone(daily.series_episode_number)
+
+    def test_valid_keep_forever_and_series_fields(self):
+        script = EpisodeScript.model_validate(
+            _make_script(
+                keep_forever=True,
+                series_id="social-security-2026",
+                series_title="日本の社会保障制度シリーズ",
+                series_episode_number=1,
+            )
+        )
+        self.assertTrue(script.keep_forever)
+        self.assertEqual(script.series_id, "social-security-2026")
+        self.assertEqual(script.series_title, "日本の社会保障制度シリーズ")
+        self.assertEqual(script.series_episode_number, 1)
+
+        # series_id alone or series_title + series_episode_number without series_id is valid
+        id_only = EpisodeScript.model_validate(_make_script(series_id="solo-series"))
+        self.assertEqual(id_only.series_id, "solo-series")
+        self.assertIsNone(id_only.series_episode_number)
+
+        title_and_num = EpisodeScript.model_validate(
+            _make_script(series_title="シリーズ名のみ", series_episode_number=2)
+        )
+        self.assertIsNone(title_and_num.series_id)
+        self.assertEqual(title_and_num.series_episode_number, 2)
+
+    def test_series_optional_text_sanitization_and_length_boundaries(self):
+        # 80 chars series_id and 120 chars series_title are valid
+        max_script = EpisodeScript.model_validate(
+            _make_script(
+                series_id="a" * 80,
+                series_title="あ" * 120,
+                series_episode_number=1,
+            )
+        )
+        self.assertEqual(len(max_script.series_id), 80)
+        self.assertEqual(len(max_script.series_title), 120)
+
+        # 81 chars series_id and 121 chars series_title fail
+        with self.assertRaises(ValidationError):
+            EpisodeScript.model_validate(_make_script(series_id="a" * 81))
+        with self.assertRaises(ValidationError):
+            EpisodeScript.model_validate(_make_script(series_title="あ" * 121))
+
+        # Control chars stripped and whitespace-only normalized to None
+        sanitized = EpisodeScript.model_validate(
+            _make_script(
+                series_id=" \x00social-security\x0b ",
+                series_title="\x01日本の社会保障\x1f  ",
+            )
+        )
+        self.assertEqual(sanitized.series_id, "social-security")
+        self.assertEqual(sanitized.series_title, "日本の社会保障")
+
+        blank_to_none = EpisodeScript.model_validate(
+            _make_script(series_id="   \x00  ", series_title="\t\n\x0c")
+        )
+        self.assertIsNone(blank_to_none.series_id)
+        self.assertIsNone(blank_to_none.series_title)
+
+    def test_series_id_slug_and_episode_number_validation(self):
+        for bad_series_id in ["Social-Security", "social_security", "social security", "a/b"]:
+            with self.subTest(bad_series_id=bad_series_id):
+                with self.assertRaises(ValidationError):
+                    EpisodeScript.model_validate(_make_script(series_id=bad_series_id))
+
+        for bad_ep_num in [0, -1, True, False]:
+            with self.subTest(bad_ep_num=bad_ep_num):
+                with self.assertRaises(ValidationError):
+                    EpisodeScript.model_validate(
+                        _make_script(series_id="valid-series", series_episode_number=bad_ep_num)
+                    )
+
+        # JSON bool must also be rejected
+        payload = json.dumps(
+            _make_script(series_id="valid-series", series_episode_number=True)
+        )
+        with self.assertRaises(ValidationError):
+            EpisodeScript.model_validate_json(payload)
+
+    def test_series_episode_number_requires_series_id_or_title(self):
+        with self.assertRaises(ValidationError):
+            EpisodeScript.model_validate(_make_script(series_episode_number=1))
+
+        # Blank strings normalize to None, so episode_number must still be rejected
+        with self.assertRaises(ValidationError):
+            EpisodeScript.model_validate(
+                _make_script(series_id="  ", series_title="\x00 ", series_episode_number=1)
+            )
 
 
 if __name__ == "__main__":

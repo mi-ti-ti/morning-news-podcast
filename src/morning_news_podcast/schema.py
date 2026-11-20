@@ -15,6 +15,7 @@ MAX_CHARS_PER_TURN = 500
 # XML 1.0 で禁止されている制御文字（TAB \x09, LF \x0a, CR \x0d は許可）
 XML_FORBIDDEN_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 EPISODE_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}(_[a-z0-9-]+)?$")
+SERIES_ID_RE = re.compile(r"^[a-z0-9-]+$")
 _DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 
 
@@ -131,6 +132,25 @@ class EpisodeScript(BaseModel):
         default=False,
         description="true の場合、翌朝以降の過去回参照および既出キーワード集計から除外",
     )
+    keep_forever: bool = Field(
+        default=False,
+        description="true の場合、RETENTION_DAYS による自動削除の対象外とする（基礎解説・シリーズ回向け）",
+    )
+    series_id: str | None = Field(
+        default=None,
+        max_length=80,
+        description="シリーズ識別子（例: social-security）",
+    )
+    series_title: str | None = Field(
+        default=None,
+        max_length=120,
+        description="シリーズ名（例: 日本の社会保障制度シリーズ）",
+    )
+    series_episode_number: int | None = Field(
+        default=None,
+        ge=1,
+        description="シリーズ内の話数（1始まり）",
+    )
     parts: list[EpisodePart] = Field(
         min_length=1,
         max_length=2,
@@ -161,12 +181,30 @@ class EpisodeScript(BaseModel):
             )
         return v.astimezone(JST)
 
-    @field_validator("weekly_theme", "keyword_of_the_day", mode="before")
+    @field_validator(
+        "weekly_theme", "keyword_of_the_day", "series_id", "series_title", mode="before"
+    )
     @classmethod
     def sanitize_optional_text(cls, v: object) -> object:
         if isinstance(v, str):
             cleaned = strip_xml_control_chars(v).strip()
             return cleaned or None
+        return v
+
+    @field_validator("series_id")
+    @classmethod
+    def validate_series_id(cls, v: str | None) -> str | None:
+        if v is not None and not SERIES_ID_RE.fullmatch(v):
+            raise ValueError(
+                f"series_id の形式が不正です: {v!r}（英小文字・数字・ハイフンのみ指定可能です）"
+            )
+        return v
+
+    @field_validator("series_episode_number", mode="before")
+    @classmethod
+    def reject_bool_for_series_episode_number(cls, v: object) -> object:
+        if isinstance(v, bool):
+            raise ValueError("series_episode_number に真偽値は指定できません")
         return v
 
     @model_validator(mode="after")
@@ -179,5 +217,11 @@ class EpisodeScript(BaseModel):
         if self.episode_type == "daily" and has_suffix:
             raise ValueError(
                 "episode_type が 'daily' の場合、episode_id は 'YYYY-MM-DD' のみ（サフィックス不可）です"
+            )
+        if self.series_episode_number is not None and not (
+            self.series_id or self.series_title
+        ):
+            raise ValueError(
+                "series_episode_number を指定する場合は series_id または series_title のいずれかを指定してください"
             )
         return self
