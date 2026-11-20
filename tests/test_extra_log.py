@@ -229,6 +229,68 @@ class TestExtraLog(unittest.TestCase):
                 },
             )
 
+    def test_conditionally_records_series_fields_only_when_present(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            log_path = tmp / "logs" / "extra_requests.jsonl"
+
+            series_path = tmp / "2026-11-20_extra-series-1.json"
+            series_path.write_text(
+                json.dumps(
+                    {
+                        "episode_id": "2026-11-20_extra-series-1",
+                        "episode_type": "extra",
+                        "title": "社会保障 第1回",
+                        "published_at": "2026-11-20T20:00:00+09:00",
+                        "series_id": "social-security",
+                        "series_title": "日本の社会保障制度シリーズ",
+                        "series_episode_number": 1,
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+
+            non_series_path = tmp / "2026-11-20_extra-plain.json"
+            non_series_path.write_text(
+                json.dumps(
+                    {
+                        "episode_id": "2026-11-20_extra-plain",
+                        "episode_type": "extra",
+                        "title": "通常の号外",
+                        "published_at": "2026-11-20T21:00:00+09:00",
+                        "series_id": "   ",
+                        "series_episode_number": True,
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+
+            added = append_extra_logs([series_path, non_series_path], log_path=log_path)
+            self.assertEqual(added, 2)
+
+            lines = log_path.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(len(lines), 2)
+            self.assertEqual(
+                json.loads(lines[0]),
+                {
+                    "date": "2026-11-20",
+                    "episode_id": "2026-11-20_extra-series-1",
+                    "title": "社会保障 第1回",
+                    "series_id": "social-security",
+                    "series_episode_number": 1,
+                },
+            )
+            self.assertEqual(
+                json.loads(lines[1]),
+                {
+                    "date": "2026-11-20",
+                    "episode_id": "2026-11-20_extra-plain",
+                    "title": "通常の号外",
+                },
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

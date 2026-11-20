@@ -53,7 +53,7 @@ def append_extra_logs(
     log_path: Path = DEFAULT_LOG_PATH,
 ) -> int:
     logged_ids = load_logged_ids(log_path)
-    new_entries: list[dict[str, str]] = []
+    new_entries: list[dict[str, object]] = []
 
     for path in script_paths:
         if not path.exists():
@@ -72,13 +72,23 @@ def append_extra_logs(
         if episode_id in logged_ids:
             continue
 
-        new_entries.append(
-            {
-                "date": _resolve_jst_date(data),
-                "episode_id": episode_id,
-                "title": title,
-            }
-        )
+        entry: dict[str, object] = {
+            "date": _resolve_jst_date(data),
+            "episode_id": episode_id,
+            "title": title,
+        }
+        series_id = data.get("series_id")
+        if isinstance(series_id, str) and series_id.strip():
+            entry["series_id"] = series_id.strip()
+        series_ep_num = data.get("series_episode_number")
+        if (
+            isinstance(series_ep_num, int)
+            and not isinstance(series_ep_num, bool)
+            and series_ep_num >= 1
+        ):
+            entry["series_episode_number"] = series_ep_num
+
+        new_entries.append(entry)
         logged_ids.add(episode_id)
 
     if not new_entries:

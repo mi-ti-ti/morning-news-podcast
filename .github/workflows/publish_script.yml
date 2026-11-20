@@ -51,9 +51,13 @@ jobs:
           processed_list=()
           for f in "${pending_files[@]}"; do
             echo "Processing script: $f"
-            uv run morning-news-podcast --from-script "$f"
+            uv run morning-news-podcast --from-script "$f" --skip-feed
             processed_list+=("$f")
           done
+
+          if [ ${#processed_list[@]} -gt 0 ]; then
+            uv run morning-news-podcast --refresh-feed-only
+          fi
 
           printf '%s\n' "${processed_list[@]}" > /tmp/processed_scripts.txt
           echo "processed=true" >> "$GITHUB_OUTPUT"
