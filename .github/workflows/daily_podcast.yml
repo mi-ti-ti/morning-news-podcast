@@ -30,7 +30,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # カスタムドメインを使う場合は Repository Variables 等で PODCAST_BASE_URL を指定可能
           # PODCAST_BASE_URL: ${{ vars.PODCAST_BASE_URL }}
-        run: uv run morning-news-podcast
+        run: uv run --no-sync morning-news-podcast
 
       - name: Publish generated files to gh-pages branch
         uses: ./.github/actions/publish-gh-pages

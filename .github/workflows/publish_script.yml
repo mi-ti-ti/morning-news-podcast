@@ -51,12 +51,12 @@ jobs:
           processed_list=()
           for f in "${pending_files[@]}"; do
             echo "Processing script: $f"
-            uv run morning-news-podcast --from-script "$f" --skip-feed
+            uv run --no-sync morning-news-podcast --from-script "$f" --skip-feed
             processed_list+=("$f")
           done
 
           if [ ${#processed_list[@]} -gt 0 ]; then
-            uv run morning-news-podcast --refresh-feed-only
+            uv run --no-sync morning-news-podcast --refresh-feed-only
           fi
 
           printf '%s\n' "${processed_list[@]}" > /tmp/processed_scripts.txt
@@ -77,7 +77,7 @@ jobs:
           git pull --rebase origin main
           mapfile -t processed_list < /tmp/processed_scripts.txt
           if [ ${#processed_list[@]} -gt 0 ]; then
-            uv run python -m morning_news_podcast.extra_log "${processed_list[@]}"
+            uv run --no-sync python -m morning_news_podcast.extra_log "${processed_list[@]}"
             if [ -f logs/extra_requests.jsonl ]; then
               git add logs/extra_requests.jsonl
             fi

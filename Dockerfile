@@ -18,4 +18,4 @@ RUN PYTHONPATH=src uv run --no-sync python -m morning_news_podcast.voicevox_setu
 COPY . .
 RUN uv sync --no-dev
 
-CMD ["uv", "run", "morning-news-podcast"]
+CMD ["uv", "run", "--no-sync", "morning-news-podcast"]
