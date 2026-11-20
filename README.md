@@ -92,7 +92,7 @@ git push -u origin main
 ```bash
 # 1. 依存パッケージと voicevox_core のインストール
 pip install -r requirements.txt
-pip install https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/voicevox_core-0.16.4+cpu-cp310-abi3-linux_x86_64.whl
+pip install https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/voicevox_core-0.16.4-cp310-abi3-manylinux_2_34_x86_64.whl
 
 # 2. VOICEVOX アセットの配置（voicevox_assets/ 以下に配置）
 mkdir -p voicevox_assets
