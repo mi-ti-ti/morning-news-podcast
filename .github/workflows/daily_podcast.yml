@@ -18,21 +18,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - name: Set up uv and Python 3.13
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
+          enable-cache: true
 
       - name: Install system dependencies (ffmpeg)
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      - name: Install Python dependencies & voicevox_core
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.4/voicevox_core-0.16.4-cp310-abi3-manylinux_2_34_x86_64.whl
+      - name: Install Python dependencies
+        run: uv sync --no-dev
 
       - name: Cache VOICEVOX assets
         id: cache-voicevox
@@ -43,25 +41,14 @@ jobs:
 
       - name: Download VOICEVOX assets (ONNX Runtime, OpenJTalk dict, 0.vvm)
         if: steps.cache-voicevox.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p voicevox_assets
-          curl -sSfL https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.17.3/voicevox_onnxruntime-linux-x64-1.17.3.tgz -o ort.tgz
-          tar -xzf ort.tgz -C voicevox_assets --strip-components=1
-          rm ort.tgz
-
-          curl -sSfL https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz -o dict.tar.gz
-          tar -xzf dict.tar.gz -C voicevox_assets
-          rm dict.tar.gz
-
-          curl -sSfL https://github.com/VOICEVOX/voicevox_vvm/releases/download/0.16.4/0.vvm -o voicevox_assets/0.vvm
+        run: uv run python voicevox_setup.py
 
       - name: Generate podcast episode and update RSS feed
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # カスタムドメインを使う場合は Repository Variables 等で PODCAST_BASE_URL を指定可能
           # PODCAST_BASE_URL: ${{ vars.PODCAST_BASE_URL }}
-        run: |
-          python main.py
+        run: uv run python main.py
 
       - name: Commit and push generated files
         run: |
