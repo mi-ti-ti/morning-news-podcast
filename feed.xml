@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+  <channel>
+    <title>毎朝5時の経済・ビジネスニュース</title>
+    <link>https://mi-ti-ti.github.io/morning-news-podcast</link>
+    <description>毎朝5:00（JST）に最新の経済・ビジネスニュースを収集し、背景や仕組みまで深掘りしてずんだもんと春日部つむぎの掛け合いで明るくお届けする自動生成ポッドキャストです。
+音声：VOICEVOX:ずんだもん、VOICEVOX:春日部つむぎ</description>
+    <language>ja</language>
+    <lastBuildDate>Sat, 21 Nov 2026 09:52:02 +0900</lastBuildDate>
+    <itunes:author>Personal AI Podcast</itunes:author>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:owner>
+      <itunes:name>Personal AI Podcast</itunes:name>
+    </itunes:owner>
+    <itunes:image href="https://mi-ti-ti.github.io/morning-news-podcast/cover.png" />
+    <itunes:category text="Business">
+      <itunes:category text="Business News" />
+    </itunes:category>
+    <item>
+      <title>2026年11月21日 | 米ナスダック急落と試されるAI投資の真価 ほか</title>
+      <description>【本日のテーマ】土曜・業界構造＆企業戦略ケーススタディ
+
+【第1部：経済ニュース】
+・米ナスダック市場が一時5%超急落し、大手ハイテク株主導のAI設備投資への過熱感に急速な調整が入った。
+・データセンターや先端半導体への巨額投資に対し、実際の収益化スピードが追いつかないタイムラグが懸念されている。
+・積立投資の資産管理への影響とともに、ビジネス現場ではAI導入における定量的な費用対効果の提示が必須となる。
+
+【第2部：ビジネスニュース】
+・かつて首位だったかっぱ寿司が赤字転落し、スシローやくらすし、はま寿司との業績格差が鮮明に
+・原価率が約50パーセントと極めて高い回転ずし業界では、調達規模とデジタル投資の差が致命的な競争力格差を生んだ
+・ビジネスにおいて規模を追うのか差別化を徹底するのか、ポジショニングの明確化が生命線となる
+
+【今日の1ワード】規模の経済</description>
+      <pubDate>Sat, 21 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-21</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-21.mp3" length="10326572" type="audio/mpeg" />
+      <itunes:duration>10:45</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外・第3回】子育て支援・生活保護と社会保障のこれから</title>
+      <description>【セーフティネットと最新の制度改正】
+・生活保護は憲法25条に基づく最後のセーフティネット（公的扶助）
+・2026年4月から子ども・子育て支援金制度が開始、10月には106万円の壁が撤廃
+・少子高齢化の中で「給付と負担のバランス」と現役世代の手取り確保が最大の課題
+
+【今日の1ワード】106万円の壁</description>
+      <pubDate>Fri, 20 Nov 2026 20:02:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-social-security-3</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-social-security-3.mp3" length="2689964" type="audio/mpeg" />
+      <itunes:duration>02:48</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外・第2回】日本の年金制度をわかりやすく！賦課方式とマクロ経済スライド</title>
+      <description>【日本の年金制度の仕組みとこれから】
+・日本の公的年金は国民年金（1階）と厚生年金（2階）の2階建て構造
+・現役世代が今の高齢者を支える「賦課方式」で運営されている
+・少子高齢化に合わせて給付水準を自動調整する「マクロ経済スライド」と2026年の改正
+
+【今日の1ワード】マクロ経済スライド</description>
+      <pubDate>Fri, 20 Nov 2026 20:01:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-social-security-2</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-social-security-2.mp3" length="2798636" type="audio/mpeg" />
+      <itunes:duration>02:55</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外・第1回】日本の社会保障制度とは？4つの柱と社会保険のしくみ</title>
+      <description>【社会保障の全体像と社会保険】
+・2026年度予算ベースの社会保障給付費は144.1兆円（対GDP比20.8%）
+・社会保障は「社会保険」「社会福祉」「公的扶助」「保健医療・公衆衛生」の4本柱
+・国民皆保険と高額療養費制度により、大きな病気でも自己負担に上限がある
+
+【今日の1ワード】国民皆保険</description>
+      <pubDate>Fri, 20 Nov 2026 20:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-social-security-1</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-social-security-1.mp3" length="2809388" type="audio/mpeg" />
+      <itunes:duration>02:56</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外】いまさら聞けない「社会主義」って何？資本主義との違いと現代の暮らし</title>
+      <description>【社会主義の基本と現代社会への影響】
+・社会主義は、工場や土地などの生産手段を社会全体で共有・管理し、格差を減らすことを目指す考え方
+・19世紀の産業革命で生まれた激しい貧富の差や過酷な労働環境への批判から広がり、20世紀には計画経済として実践された
+・現代でも医療や年金、公教育といった社会保障の土台として、多くの資本主義国の暮らしに影響を与えている
+
+【今日の1ワード】社会主義</description>
+      <pubDate>Fri, 20 Nov 2026 18:40:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-socialism</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-socialism.mp3" length="3057068" type="audio/mpeg" />
+      <itunes:duration>03:11</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月20日 | 今週の総括：AI過熱感の修正と粘着する物価から見る今後のリスク管理 ほか</title>
+      <description>【本日のテーマ】金曜・今週の総括＆振り返り
+
+【第1部：経済ニュース】
+・日経平均株価が一時2,800円超の大幅急落、米ハイテク株主導で過剰なAI投資への費用対効果がシビアに問われる局面に突入。
+・10月のコアCPIは前年比2.2%上昇となり、原材料高から人件費を反映したサービス価格の上昇へとインフレの質が変化。
+・家計では物価高と将来の金利上昇への備えが求められ、ビジネス現場ではAI導入などの投資対効果を実証する力が一段と重要に。
+
+【第2部：ビジネスニュース】
+・日立製作所が約3万5000人規模の「日立デジタル」を新設し、現場のインフラを自律制御するフィジカルAIの覇権を狙う。
+・英アームが省電力技術を武器にAIデータセンター市場で急伸し、消費電力の壁に直面するエヌビディア一強の打破に挑む。
+・今週のビジネスは、画面の中の会話型AIから、現場の産業インフラや省エネ半導体といった物理世界への本格移行が鮮明になった。
+
+【今日の1ワード】フィジカルAI</description>
+      <pubDate>Fri, 20 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20.mp3" length="9458732" type="audio/mpeg" />
+      <itunes:duration>09:51</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+  </channel>
+</rss>
