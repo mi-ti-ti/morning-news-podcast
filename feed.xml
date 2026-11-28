@@ -1,0 +1,316 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+  <channel>
+    <title>毎朝5時の経済・ビジネスニュース</title>
+    <link>https://mi-ti-ti.github.io/morning-news-podcast</link>
+    <description>毎朝5:00（JST）に最新の経済・ビジネスニュースを収集し、背景や仕組みまで深掘りしてずんだもんと春日部つむぎの掛け合いで明るくお届けする自動生成ポッドキャストです。
+音声：VOICEVOX:ずんだもん、VOICEVOX:春日部つむぎ</description>
+    <language>ja</language>
+    <lastBuildDate>Sat, 28 Nov 2026 13:44:38 +0900</lastBuildDate>
+    <itunes:author>Personal AI Podcast</itunes:author>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:owner>
+      <itunes:name>Personal AI Podcast</itunes:name>
+    </itunes:owner>
+    <itunes:image href="https://mi-ti-ti.github.io/morning-news-podcast/cover.png" />
+    <itunes:category text="Business">
+      <itunes:category text="Business News" />
+    </itunes:category>
+    <item>
+      <title>【号外・第3回】利上げで私たちの生活はどう変わる？住宅ローン・預金・為替のリアル</title>
+      <description>【シリーズ】日銀の利上げ徹底解説シリーズ（第3回）
+
+【家計・ビジネスへの影響とこれからの備え】
+・3メガバンクは2026年11月から普通預金金利を年0.50%へ引き上げ（ただし物価上昇下では実質金利に注意）
+・住宅ローン変動金利は2026年6月・9月の利上げ分が2027年にかけて順次返済額へ反映される見込み
+・金利上昇局面では「5年ルール・125%ルール」の仕組み把握や、預金と投資のバランス設計が重要
+
+【今日の1ワード】5年ルール</description>
+      <pubDate>Sat, 28 Nov 2026 14:02:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-28_extra-boj-rate-hike-3</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-28_extra-boj-rate-hike-3.mp3" length="3161132" type="audio/mpeg" />
+      <itunes:duration>03:17</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <itunes:episode>3</itunes:episode>
+    </item>
+    <item>
+      <title>【号外・第2回】なぜ日銀は利上げを続けるのか？基調的インフレと中立金利・12月会合の焦点</title>
+      <description>【シリーズ】日銀の利上げ徹底解説シリーズ（第2回）
+
+【今後の利上げペースと注目キーワード】
+・2026年10月会合で日銀は「基調的な物価上昇率が2%と概ね整合的な水準に到達」と判断
+・11月27日発表の11月東京23区コアCPIは前年同月比2.9%へ再加速し、12月17〜18日の会合に注目が集まる
+・日銀が意識する名目「中立金利」の推計レンジは1.1%〜2.5%で、1.25%からどこまで上げるかが焦点
+
+【今日の1ワード】中立金利</description>
+      <pubDate>Sat, 28 Nov 2026 14:01:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-28_extra-boj-rate-hike-2</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-28_extra-boj-rate-hike-2.mp3" length="3090476" type="audio/mpeg" />
+      <itunes:duration>03:13</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <itunes:episode>2</itunes:episode>
+    </item>
+    <item>
+      <title>【号外・第1回】日銀の利上げとは？マイナス金利解除から1.25%までの歩み</title>
+      <description>【シリーズ】日銀の利上げ徹底解説シリーズ（第1回）
+
+【日銀の利上げの基本とこれまでの歩み】
+・2024年3月のマイナス金利解除から段階的に利上げが進み、2026年9月に政策金利は1.25%（約31年ぶり水準）へ到達
+・政策金利（無担保コール翌日物金利）の引き上げは、経済の過熱やインフレを抑えるブレーキの役割を持つ
+・賃上げと物価上昇の広がりを背景に、日本は「金利のない世界」から「金利のある世界」へ本格的に移行した
+
+【今日の1ワード】政策金利</description>
+      <pubDate>Sat, 28 Nov 2026 14:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-28_extra-boj-rate-hike-1</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-28_extra-boj-rate-hike-1.mp3" length="2977196" type="audio/mpeg" />
+      <itunes:duration>03:06</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <itunes:episode>1</itunes:episode>
+    </item>
+    <item>
+      <title>2026年11月28日 | 米ブラックフライデー開幕とナスダック反発に見る個人消費の底力 ほか</title>
+      <description>【本日のテーマ】土曜・業界構造＆企業戦略ケーススタディ
+
+【第1部：経済ニュース】
+・米ブラックフライデーの開幕に合わせてナスダックが2パーセント超の急反発を記録
+・大幅調整後の割安感と個人消費の底堅さがスタグフレーション懸念を和らげた
+・年末商戦の行方はインフレ長期化や米金利、為替を通じた国内生活費にも直結する
+
+【第2部：ビジネスニュース】
+・電子部品大手の京セラが、今後5年間の設備投資枠9,000億円の約8割をエーアイ先端部品へ集中投下する大転換を発表。
+・スマホ成熟化と汎用品の価格競争から脱却し、創業以来のセラミック技術をエーアイ半導体のボトルネック解決にぶつける戦略。
+・ビジネスの教訓として、自社の強みを活かして成長市場へ経営資源を絞り込む重要性と部材産業の競争優位性を示す。
+
+【今日の1ワード】選択と集中</description>
+      <pubDate>Sat, 28 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-28</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-28.mp3" length="9861164" type="audio/mpeg" />
+      <itunes:duration>10:16</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月27日 | 東京コアCPI2.9％へ加速と住宅資金贈与の非課税延長 ほか</title>
+      <description>【本日のテーマ】金曜・今週の総括＆振り返り
+
+【第1部：経済ニュース】
+・11月の東京23区コアCPIが2.9パーセントに再加速し、日銀による12月追加利上げの現実味が急速に高まる。
+・インフレの主因が原材料高から人件費やサービス価格転嫁へ移行し、物価と金利の連動が強まる構造へ。
+・住宅資金贈与の非課税特例が延長へ。金利上昇下で高齢層から現役世代への資産移転と内需下支えを狙う。
+
+【第2部：ビジネスニュース】
+・米エヌビディアが東南アジア4カ国への先端エーアイサーバー出荷を一時停止し、米中規制逃れの抜け穴封じが本格化。
+・外部サースの不正アクセスにより国内大手企業で1,200万人規模の情報流出が発生し、委託先リスクが表面化。
+・利便性や効率を追求したネットワークのつながりが、安全保障やセキュリティの急所となる時代への備えが急務。
+
+【今日の1ワード】ゼロトラスト</description>
+      <pubDate>Fri, 27 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-27</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-27.mp3" length="10603820" type="audio/mpeg" />
+      <itunes:duration>11:03</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月26日 | 米追加関税方針の衝撃とFRBベージュブックが示すインフレの粘着性 ほか</title>
+      <description>【本日のテーマ】木曜・マーケット＆産業動向深掘り
+
+【第1部：経済ニュース】
+・米通商代表部が通商法301条に基づき、日本製品などに最大15パーセントから20パーセントの追加関税を課す方針を公表した。
+・米連邦準備制度理事会の経済報告で幅広い業種のコスト上昇が確認され、金利高止まり懸念からナスダック市場が乱高下した。
+・欧米での保護主義的な動きと高金利の長期化は、日本企業の輸出採算や家計の物価負担に影響を与える可能性がある。
+
+【第2部：ビジネスニュース】
+・パルグループの3COINSは、単なる均一価格から脱却し中価格帯の高機能商品を展開して急成長している
+・スタッフのインフルエンサー化と小ロット展開により、定価で売り切る高いプロパー消化率を実現した
+・値上げ時代のビジネスでは、安売り競争を避けて価値を認めてもらう価格決定力が極めて重要になる
+
+【今日の1ワード】プライシングパワー</description>
+      <pubDate>Thu, 26 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-26</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-26.mp3" length="9999788" type="audio/mpeg" />
+      <itunes:duration>10:25</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月25日 | エヌビディア急反落とEUハイブリッド車制限の波紋 ほか</title>
+      <description>【本日のテーマ】水曜・テック＆新ビジネスモデル特集
+
+【第1部：経済ニュース】
+・米エヌビディアの企業統治への懸念からハイテク株が急落し、日経平均株価も一時2,100円超の大幅下落を記録。
+・リーダー復帰に米政権が介入した不透明感から、企業価値の割引を意味するガバナンス・ディスカウントが市場で発生。
+・欧州連合がハイブリッド車の輸入制限を発動し、脱炭素政策から自国産業の防衛へと世界的な通商ルールが変化。
+
+【第2部：ビジネスニュース】
+・米クラウドストライクがゼットスケーラーを約7兆円で買収合意し、エーアイ時代のサイバー防衛を一本化する巨大再編が始動。
+・低価格ジムのチョコザップは、店舗やアプリを広告媒体に変えるリテールメディア化で月額2,980円を維持する新収益モデルを確立。
+・顧客接点を多重活用して別企業から収益を得る仕組みは、コスト高に悩むあらゆる業界の価格維持や新規事業のヒントになる。
+
+【今日の1ワード】リテールメディア</description>
+      <pubDate>Wed, 25 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-25</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-25.mp3" length="9625004" type="audio/mpeg" />
+      <itunes:duration>10:01</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月24日 | エヌビディアCEO電撃復帰と日経平均2800円高の衝撃 ほか</title>
+      <description>【本日のテーマ】火曜・最新トレンド深掘り
+
+【第1部：経済ニュース】
+・米半導体大手エヌビディアのジェンスン・フアン氏が最高経営責任者に電撃復帰し、日経平均株価は一時2,800円超の歴史的な高騰を記録。
+・米政権が取締役会に直接説得を行うなど異例の介入を見せた背景には、エーアイインフラが国家安全保障の要となった現実がある。
+・相場の急反発に安堵するだけでなく、特定の一社やリーダーに世界経済が左右される構造的リスクを踏まえた資産管理と投資判断が求められる。
+
+【第2部：ビジネスニュース】
+・テレワークを牽引してきた大手企業で、週3日以上の原則出社など出社回帰の動きが加速している。
+・定型業務をエーアイが代替する中、対面でのすり合わせや雑談から生まれる組織の暗黙知が再評価されている。
+・これからのビジネスパーソンには、一人で作業する力以上に周囲を巻き込んで合意形成する対人能力が求められる。
+
+【今日の1ワード】暗黙知</description>
+      <pubDate>Tue, 24 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-24</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-24.mp3" length="10096556" type="audio/mpeg" />
+      <itunes:duration>10:31</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月23日 | 波乱の米ハイテク急落から明けた月曜日！感謝祭商戦と重要インフレ指標の行方 ほか</title>
+      <description>【本日のテーマ】月曜・今週の注目イベント予習
+
+【第1部：経済ニュース】
+・先週末の米ハイテク株急落と時価総額約四兆ドル消失を受け、今週は市場の底入れを探る正念場となる。
+・米感謝祭翌日のブラックフライデー開幕やピーシーイーデフレーター公表が控え、個人消費と金利見通しが試される。
+・国内でも週末に東京都区部シーピーアイ発表が控えており、日銀の十二月利上げ観測や家計の金利動向に要注目。
+
+【第2部：ビジネスニュース】
+・日本自動車工業会が鉄・樹脂・ワイヤーハーネスなど基礎素材や部品の規格共通化方針を発表
+・電気自動車やソフトウェア開発への巨額投資を受け、過剰な独自仕様を見直して協調領域へ舵を切る
+・下請け系列の再編が進む一方、車両価格の抑制や修理期間の短縮など消費者への恩恵も期待される
+
+【今日の1ワード】協調領域</description>
+      <pubDate>Mon, 23 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-23</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-23.mp3" length="10736300" type="audio/mpeg" />
+      <itunes:duration>11:11</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月22日 | 4兆ドル消失から学ぶ株価決定と期待値のメカニズム ほか</title>
+      <description>【本日のテーマ】日曜・ニュースを読み解く経済の基礎教養
+
+【第1部：経済ニュース】
+・米ナスダック市場で約4兆ドルの時価総額が急減した背景には、過熱した成長期待の修正がある
+・株価は一株当たり利益と株価収益率の掛け算で決まり、利益が減らなくても期待値の縮小だけで急落する
+・積立投資での冷静な継続判断や、ビジネス現場での即効性ある投資対効果の説明が重要になる
+
+【第2部：ビジネスニュース】
+・三井住友銀行やゾゾなどで、外部サース委託先への不正アクセスを起点とした数千万人規模の情報漏えいが相次ぎ発生した。
+・強固な大手企業本体ではなく、接続された外部サービスを踏み台にする「アイランドホッピング攻撃」の構造的脅威が浮き彫りになった。
+・業務効率化とセキュリティ統制のバランスを見直すとともに、個人もパスワード管理や二段階認証の徹底が急務となる。
+
+【今日の1ワード】サプライチェーン攻撃</description>
+      <pubDate>Sun, 22 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-22</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-22.mp3" length="10155308" type="audio/mpeg" />
+      <itunes:duration>10:35</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月21日 | 米ナスダック急落と試されるAI投資の真価 ほか</title>
+      <description>【本日のテーマ】土曜・業界構造＆企業戦略ケーススタディ
+
+【第1部：経済ニュース】
+・米ナスダック市場が一時5%超急落し、大手ハイテク株主導のAI設備投資への過熱感に急速な調整が入った。
+・データセンターや先端半導体への巨額投資に対し、実際の収益化スピードが追いつかないタイムラグが懸念されている。
+・積立投資の資産管理への影響とともに、ビジネス現場ではAI導入における定量的な費用対効果の提示が必須となる。
+
+【第2部：ビジネスニュース】
+・かつて首位だったかっぱ寿司が赤字転落し、スシローやくらすし、はま寿司との業績格差が鮮明に
+・原価率が約50パーセントと極めて高い回転ずし業界では、調達規模とデジタル投資の差が致命的な競争力格差を生んだ
+・ビジネスにおいて規模を追うのか差別化を徹底するのか、ポジショニングの明確化が生命線となる
+
+【今日の1ワード】規模の経済</description>
+      <pubDate>Sat, 21 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-21</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-21.mp3" length="10326572" type="audio/mpeg" />
+      <itunes:duration>10:45</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外・第3回】子育て支援・生活保護と社会保障のこれから</title>
+      <description>【セーフティネットと最新の制度改正】
+・生活保護は憲法25条に基づく最後のセーフティネット（公的扶助）
+・2026年4月から子ども・子育て支援金制度が開始、10月には106万円の壁が撤廃
+・少子高齢化の中で「給付と負担のバランス」と現役世代の手取り確保が最大の課題
+
+【今日の1ワード】106万円の壁</description>
+      <pubDate>Fri, 20 Nov 2026 20:02:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-social-security-3</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-social-security-3.mp3" length="2689964" type="audio/mpeg" />
+      <itunes:duration>02:48</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外・第2回】日本の年金制度をわかりやすく！賦課方式とマクロ経済スライド</title>
+      <description>【日本の年金制度の仕組みとこれから】
+・日本の公的年金は国民年金（1階）と厚生年金（2階）の2階建て構造
+・現役世代が今の高齢者を支える「賦課方式」で運営されている
+・少子高齢化に合わせて給付水準を自動調整する「マクロ経済スライド」と2026年の改正
+
+【今日の1ワード】マクロ経済スライド</description>
+      <pubDate>Fri, 20 Nov 2026 20:01:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-social-security-2</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-social-security-2.mp3" length="2798636" type="audio/mpeg" />
+      <itunes:duration>02:55</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外・第1回】日本の社会保障制度とは？4つの柱と社会保険のしくみ</title>
+      <description>【社会保障の全体像と社会保険】
+・2026年度予算ベースの社会保障給付費は144.1兆円（対GDP比20.8%）
+・社会保障は「社会保険」「社会福祉」「公的扶助」「保健医療・公衆衛生」の4本柱
+・国民皆保険と高額療養費制度により、大きな病気でも自己負担に上限がある
+
+【今日の1ワード】国民皆保険</description>
+      <pubDate>Fri, 20 Nov 2026 20:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-social-security-1</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-social-security-1.mp3" length="2809388" type="audio/mpeg" />
+      <itunes:duration>02:56</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>【号外】いまさら聞けない「社会主義」って何？資本主義との違いと現代の暮らし</title>
+      <description>【社会主義の基本と現代社会への影響】
+・社会主義は、工場や土地などの生産手段を社会全体で共有・管理し、格差を減らすことを目指す考え方
+・19世紀の産業革命で生まれた激しい貧富の差や過酷な労働環境への批判から広がり、20世紀には計画経済として実践された
+・現代でも医療や年金、公教育といった社会保障の土台として、多くの資本主義国の暮らしに影響を与えている
+
+【今日の1ワード】社会主義</description>
+      <pubDate>Fri, 20 Nov 2026 18:40:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20_extra-socialism</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20_extra-socialism.mp3" length="3057068" type="audio/mpeg" />
+      <itunes:duration>03:11</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2026年11月20日 | 今週の総括：AI過熱感の修正と粘着する物価から見る今後のリスク管理 ほか</title>
+      <description>【本日のテーマ】金曜・今週の総括＆振り返り
+
+【第1部：経済ニュース】
+・日経平均株価が一時2,800円超の大幅急落、米ハイテク株主導で過剰なAI投資への費用対効果がシビアに問われる局面に突入。
+・10月のコアCPIは前年比2.2%上昇となり、原材料高から人件費を反映したサービス価格の上昇へとインフレの質が変化。
+・家計では物価高と将来の金利上昇への備えが求められ、ビジネス現場ではAI導入などの投資対効果を実証する力が一段と重要に。
+
+【第2部：ビジネスニュース】
+・日立製作所が約3万5000人規模の「日立デジタル」を新設し、現場のインフラを自律制御するフィジカルAIの覇権を狙う。
+・英アームが省電力技術を武器にAIデータセンター市場で急伸し、消費電力の壁に直面するエヌビディア一強の打破に挑む。
+・今週のビジネスは、画面の中の会話型AIから、現場の産業インフラや省エネ半導体といった物理世界への本格移行が鮮明になった。
+
+【今日の1ワード】フィジカルAI</description>
+      <pubDate>Fri, 20 Nov 2026 05:00:00 +0900</pubDate>
+      <guid isPermaLink="false">podcast-2026-11-20</guid>
+      <enclosure url="https://mi-ti-ti.github.io/morning-news-podcast/episodes/2026-11-20.mp3" length="9458732" type="audio/mpeg" />
+      <itunes:duration>09:51</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+  </channel>
+</rss>
